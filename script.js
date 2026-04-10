@@ -12,11 +12,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let yyyy = String(today.getFullYear());
     if(document.getElementById('dash_month').querySelector(`option[value="${mm}"]`)) document.getElementById('dash_month').value = mm;
     if(document.getElementById('dash_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('dash_year').value = yyyy;
+    
+    // ตั้งค่า dropdown admin ให้ตรงกับเดือนปัจจุบันด้วย
+    if(document.getElementById('admin_month').querySelector(`option[value="${mm}"]`)) document.getElementById('admin_month').value = mm;
+    if(document.getElementById('admin_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('admin_year').value = yyyy;
 
     const savedCR = localStorage.getItem('cr_hub_name');
     if (savedCR) document.getElementById('cr_name').value = savedCR;
 
-    // บังคับโหลด Dashboard ทันทีที่เปิดเว็บ
     loadDashboard();
 });
 
@@ -40,12 +43,12 @@ function openAdminTab() {
     } else if (pin !== null && pin !== "") alert("❌ รหัสผ่านไม่ถูกต้องครับ!");
 }
 
-// ---------------------------------------------------
-// 🚀 ฟังก์ชันอัปโหลด CSV (ป้องกัน Header มีปัญหา)
-// ---------------------------------------------------
 function uploadCSV() {
     const fileInput = document.getElementById('csv_file');
     const file = fileInput.files[0];
+    const adminMonth = document.getElementById('admin_month').value;
+    const adminYear = document.getElementById('admin_year').value;
+
     if (!file) return alert("⚠️ กรุณาเลือกไฟล์ .csv ก่อนครับ");
 
     const btn = document.getElementById('upload-btn');
@@ -55,18 +58,29 @@ function uploadCSV() {
     Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
-        // สำคัญ: ป้องกันอักขระ BOM ซ่อนอยู่ในชื่อคอลัมน์จาก Excel
         transformHeader: function(header) { return header.trim().replace(/^\uFEFF/, ''); },
         complete: function(results) {
-            const payload = { action: "upload_csv", csvData: results.data };
+            const payload = { 
+                action: "upload_csv", 
+                month: adminMonth,
+                year: adminYear,
+                csvData: results.data 
+            };
             fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(r => r.json())
             .then(res => {
-                btn.innerHTML = '<i class="fas fa-rocket"></i> อัปโหลดฐานข้อมูล'; btn.disabled = false;
-                if(res.result === 'success') { alert("✅ อัปโหลด CSV สำเร็จ! ไปที่ Dashboard เพื่อดูผลลัพธ์ได้เลย"); fileInput.value = ""; } 
+                btn.innerHTML = '<i class="fas fa-rocket"></i> อัปโหลดเข้าฐานข้อมูล'; btn.disabled = false;
+                if(res.result === 'success') { 
+                    alert("✅ อัปโหลด CSV สำเร็จ! ข้อมูลถูกบันทึกในเดือนที่คุณเลือกเรียบร้อย"); 
+                    fileInput.value = ""; 
+                    // สลับไปหน้า Dashboard แล้วโหลดเดือนที่เพิ่งอัปโหลดโชว์ให้ดู
+                    document.getElementById('dash_month').value = adminMonth;
+                    document.getElementById('dash_year').value = adminYear;
+                    switchTab({currentTarget: document.querySelector('.tab-btn')}, 'tab-dashboard');
+                } 
                 else alert("❌ ข้อผิดพลาดเซิร์ฟเวอร์: " + res.message);
             }).catch(e => {
-                btn.innerHTML = '<i class="fas fa-rocket"></i> อัปโหลดฐานข้อมูล'; btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-rocket"></i> อัปโหลดเข้าฐานข้อมูล'; btn.disabled = false;
                 alert("❌ เกิดข้อผิดพลาดในการส่งข้อมูล");
             });
         }
@@ -115,7 +129,7 @@ function loadPromotions() {
                 if (item.endDate) { let eDate = new Date(item.endDate); eDate.setHours(0,0,0,0); if (today > eDate) isValid = false; }
                 if(isValid) {
                     let expireText = item.endDate ? `<p style="font-size:13px; color:#d32f2f; margin-bottom:15px;"><i class="fas fa-clock"></i> หมดเขต: ${item.endDate}</p>` : '';
-                    html += `<div class="promo-card"><span style="font-size:12px; background:#e8f5e9; padding:4px 10px; border-radius:15px; color:#2e7d32; font-weight:bold;">${item.category}</span><h4 style="margin-top: 15px;">${item.title}</h4><p>${item.desc}</p>${expireText}<a href="${item.link}" target="_blank" class="btn-view"><i class="fas fa-external-link-alt"></i> เปิดดูไฟล์</a></div>`;
+                    html += `<div class="promo-card"><span style="font-size:12px; background:#e3f2fd; padding:4px 10px; border-radius:15px; color:#1565c0; font-weight:bold;">${item.category}</span><h4 style="margin-top: 15px;">${item.title}</h4><p>${item.desc}</p>${expireText}<a href="${item.link}" target="_blank" class="btn-view"><i class="fas fa-external-link-alt"></i> เปิดดูไฟล์</a></div>`;
                 }
             });
             container.innerHTML = html === '' ? '<p style="text-align:center; width:100%;">ไม่มีโปรโมชั่นในช่วงนี้</p>' : html;
@@ -154,41 +168,71 @@ function loadDashboard() {
             pb.style.width = (percent > 100 ? 100 : percent) + '%'; pb.innerText = percent + '%';
             if(percent >= 100) pb.style.background = "linear-gradient(90deg, #1b5e20, #388e3c)";
             else if(percent >= 80) pb.style.background = "linear-gradient(90deg, #388e3c, #81c784)";
-            else if(percent >= 50) pb.style.background = "linear-gradient(90deg, #fbc02d, #ffb74d)";
+            else if(percent >= 50) pb.style.background = "linear-gradient(90deg, #1565c0, #4fc3f7)"; // ปรับเป็นโทนฟ้า
             else pb.style.background = "linear-gradient(90deg, #d32f2f, #e57373)";
 
-            // กราฟแท่ง พนักงาน
+            // 1. กราฟแท่ง พนักงาน (ธีม เขียว-น้ำเงิน + ฝังตัวเลขด้านบน)
             if (crChartInstance) crChartInstance.destroy();
             crChartInstance = new Chart(document.getElementById('crChart'), {
                 type: 'bar',
-                data: { labels: ['กรรณิกา', 'เรืองศิริ'], datasets: [{ data: [d.kannika, d.ruangsiri], backgroundColor: ['#4caf50', '#ff9800'], borderRadius: 6 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { color: '#333', font: { weight: 'bold', size: 16 }, anchor: 'end', align: 'top', formatter: v => v > 0 ? v : '' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                data: { 
+                    labels: ['กรรณิกา', 'เรืองศิริ'], 
+                    datasets: [{ 
+                        data: [d.kannika, d.ruangsiri], 
+                        backgroundColor: ['#2e7d32', '#1565c0'], // เขียวเข้ม, น้ำเงินเข้ม
+                        borderRadius: 6 
+                    }] 
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    layout: { padding: { top: 25 } }, // เว้นที่ด้านบนให้ตัวเลขไม่โดนตัด
+                    plugins: { 
+                        legend: { display: false }, 
+                        datalabels: { 
+                            color: '#0d47a1', 
+                            font: { weight: 'bold', size: 16 }, 
+                            anchor: 'end', 
+                            align: 'top', // วางไว้เหนือแท่งกราฟ
+                            offset: 4,
+                            formatter: v => v > 0 ? v : '' 
+                        } 
+                    }, 
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } 
+                }
             });
 
-            // กราฟโดนัท
+            // 2. กราฟโดนัท (ธีม เขียว-น้ำเงิน-ฟ้า + ฝังตัวเลข)
             if (typeChartInstance) typeChartInstance.destroy();
             typeChartInstance = new Chart(document.getElementById('typeChart'), {
                 type: 'doughnut',
-                data: { labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: ['#2e7d32', '#1976d2', '#8e24aa'], borderWidth: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 13 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 16 }, formatter: v => v > 0 ? v : '' } } }
+                data: { 
+                    labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], 
+                    datasets: [{ 
+                        data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], 
+                        backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], 
+                        borderWidth: 2 
+                    }] 
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, cutout: '55%', 
+                    plugins: { 
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 13 } } }, 
+                        datalabels: { 
+                            color: '#fff', 
+                            font: { weight: 'bold', size: 16 }, 
+                            formatter: v => v > 0 ? v : '' 
+                        } 
+                    } 
+                }
             });
 
-            // สร้างการ์ดแสดงสถานะ CSV อย่างแม่นยำ
+            // 3. หลอดสถานะการโทรจาก CSV
             if (d.csvData && d.csvData.length > 0) {
-                let csvHtml = '<div style="grid-column: 1 / -1;"><h3 style="color:#1b5e20; margin-top:20px; border-bottom:2px solid #c8e6c9; padding-bottom:10px;"><i class="fas fa-headset" style="color:#2e7d32;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3></div>';
+                let csvHtml = '<div style="grid-column: 1 / -1;"><h3 style="color:#0d47a1; margin-top:20px; border-bottom:2px solid #bbdefb; padding-bottom:10px;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3></div>';
                 
                 d.csvData.forEach(item => {
-                    // คำนวณจำนวนที่ต้องโทรจริงๆ (รถที่ยังไม่เข้า)
                     const needToCall = item.tracked + item.untracked; 
-                    let actualPercent = 0;
-                    
-                    if (needToCall === 0) {
-                        // ถ้าไม่มีใครให้ต้องโทรตามแล้ว แปลว่าเป้าหมายนี้สมบูรณ์ 100%
-                        actualPercent = 100;
-                    } else {
-                        // คำนวณเป้าหมายจากการโทรสำเร็จ
-                        actualPercent = Math.round((item.tracked / needToCall) * 100);
-                    }
+                    let actualPercent = needToCall === 0 ? 100 : Math.round((item.tracked / needToCall) * 100);
 
                     csvHtml += `
                     <div class="csv-card">
@@ -196,10 +240,10 @@ function loadDashboard() {
                         
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
                             <span style="color:#555;">ความคืบหน้า</span>
-                            <span style="color:#2e7d32; font-weight:bold;">${actualPercent}%</span>
+                            <span style="color:#1565c0; font-weight:bold;">${actualPercent}%</span>
                         </div>
                         <div style="width:100%; background:#e0e0e0; height:12px; border-radius:6px; overflow:hidden; margin-bottom:15px;">
-                            <div style="width:${actualPercent}%; background:linear-gradient(90deg, #4caf50, #81c784); height:100%; transition: width 1s;"></div>
+                            <div style="width:${actualPercent}%; background:linear-gradient(90deg, #1976d2, #4fc3f7); height:100%; transition: width 1s;"></div>
                         </div>
                         
                         <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:5px;">
@@ -208,11 +252,11 @@ function loadDashboard() {
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:5px;">
                             <span>✅ เข้าก่อนติดตาม:</span>
-                            <b style="color:#1976d2;">${item.preService} คัน</b>
+                            <b style="color:#2e7d32;">${item.preService} คัน</b>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#f9f9f9; padding:8px; border-radius:6px;">
                             <span>📞 สถานะการโทร:</span>
-                            <span>โทรแล้ว <b style="color:#2e7d32;">${item.tracked}</b> | ค้าง <b style="color:#d32f2f;">${item.untracked}</b></span>
+                            <span>โทรแล้ว <b style="color:#1565c0;">${item.tracked}</b> | ค้าง <b style="color:#d32f2f;">${item.untracked}</b></span>
                         </div>
                     </div>`;
                 });
