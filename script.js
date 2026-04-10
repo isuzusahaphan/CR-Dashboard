@@ -7,6 +7,10 @@ let kannikaChartInstance = null;
 let ruangsiriChartInstance = null;
 let currentDashboardData = null; 
 
+let allReportsList = [];
+
+const donutColors = ['#43a047', '#fb8c00', '#1e88e5'];
+
 document.addEventListener("DOMContentLoaded", () => {
     const today = new Date();
     document.getElementById('record_date').value = today.toLocaleDateString('en-CA');
@@ -132,27 +136,68 @@ function loadPromotions() {
     });
 }
 
+// ---------------------------------------------------
+// 🚀 ระบบดึงรายงานและ Filter 2 เงื่อนไข (เดือน + ประเภท)
+// ---------------------------------------------------
 function loadReports() {
     const container = document.getElementById('reports-container'); container.innerHTML = '<div class="spinner-small"></div>';
     fetch(API_URL + "?action=get_reports").then(r => r.json()).then(data => {
         if(data.result === 'success' && data.data.length > 0) {
-            let html = ''; data.data.reverse().forEach(item => {
-                const typeClass = item.type === 'รายเดือน' ? 'monthly' : '';
-                const icon = item.type === 'รายเดือน' ? 'fa-calendar-alt' : 'fa-calendar-week';
-                html += `<div class="report-item ${typeClass}"><div class="report-info"><h4><i class="fas ${icon}"></i> ${item.filename}</h4><p>รอบการประเมิน: <b>${item.period}</b> | ชนิดรายงาน: ${item.type}</p></div><a href="${item.link}" target="_blank" class="btn-view" style="width:auto;"><i class="fas fa-file-pdf"></i> เปิดดูเอกสาร</a></div>`;
+            allReportsList = data.data.reverse(); 
+
+            // สร้าง Dropdown ให้เลือก "รอบประจำเดือน" อัตโนมัติ
+            const periodDropdown = document.getElementById('report_period_filter');
+            const uniquePeriods = [...new Set(allReportsList.map(item => item.period))]; 
+            let options = '<option value="all">ทุกเดือน (ทั้งหมด)</option>';
+            uniquePeriods.forEach(p => {
+                // เซ็ตค่าล่าสุดให้ถูกเลือกเป็นค่าเริ่มต้น
+                let isSelected = (p === uniquePeriods[0]) ? "selected" : "";
+                options += `<option value="${p}" ${isSelected}>${p}</option>`;
             });
-            container.innerHTML = html;
-        } else container.innerHTML = `<p style="text-align:center; width:100%;">ไม่พบเอกสารรายงาน</p>`;
+            periodDropdown.innerHTML = options;
+
+            // สั่งกรองข้อมูลครั้งแรก
+            filterReports();
+        } else {
+            container.innerHTML = `<p style="text-align:center; width:100%;">ไม่พบเอกสารรายงาน</p>`;
+        }
     });
 }
 
-// ✨ ฟังก์ชันคำนวณ 2 บรรทัด (จำนวน + เปอร์เซ็นต์) สำหรับกราฟโดนัท
+function filterReports() {
+    const periodFilter = document.getElementById('report_period_filter').value;
+    const typeFilter = document.getElementById('report_type_filter').value;
+
+    let filteredList = allReportsList.filter(item => {
+        let matchPeriod = (periodFilter === "all" || item.period === periodFilter);
+        let matchType = (typeFilter === "all" || item.type === typeFilter);
+        return matchPeriod && matchType;
+    });
+
+    renderReports(filteredList);
+}
+
+function renderReports(list) {
+    const container = document.getElementById('reports-container');
+    if(list.length === 0) {
+        container.innerHTML = `<p style="text-align:center; width:100%; color:#777; padding: 20px; border: 1px dashed #ccc; border-radius: 8px; background: #fff;">ไม่พบเอกสารรายงานที่ตรงกับเงื่อนไขการค้นหา</p>`;
+        return;
+    }
+    let html = ''; 
+    list.forEach(item => {
+        const typeClass = item.type === 'รายเดือน' ? 'monthly' : '';
+        const icon = item.type === 'รายเดือน' ? 'fa-calendar-alt' : 'fa-calendar-week';
+        html += `<div class="report-item ${typeClass}"><div class="report-info"><h4><i class="fas ${icon}"></i> ${item.filename}</h4><p>รอบการประเมิน: <b>${item.period}</b> | ชนิดรายงาน: ${item.type}</p></div><a href="${item.link}" target="_blank" class="btn-view" style="width:auto;"><i class="fas fa-file-pdf"></i> เปิดดูเอกสาร</a></div>`;
+    });
+    container.innerHTML = html;
+}
+
 const donutFormatter = (value, ctx) => {
     if(value === 0) return '';
     let sum = 0;
     ctx.chart.data.datasets[0].data.forEach(data => { sum += data; });
     let percentage = (value * 100 / sum).toFixed(1) + "%";
-    return [value + " คัน", "(" + percentage + ")"]; // คืนค่าเป็น Array เพื่อให้ขึ้นบรรทัดใหม่
+    return [value + " คัน", "(" + percentage + ")"]; 
 };
 
 function loadDashboard() {
@@ -169,11 +214,14 @@ function loadDashboard() {
 
             document.getElementById('dash_target').innerText = d.target;
             document.getElementById('dash_current').innerText = d.current;
+            
+            document.getElementById('update_kannika').innerText = d.lastUpdateKannika;
+            document.getElementById('update_ruangsiri').innerText = d.lastUpdateRuangsiri;
+
             let percent = d.target > 0 ? Math.round((d.current / d.target) * 100) : 0;
             const pb = document.getElementById('dash_progress');
             pb.style.width = (percent > 100 ? 100 : percent) + '%'; pb.innerText = percent + '%';
             
-            // 🤖 ระบบ AI แจ้งข้อความให้กำลังใจตามผลงาน
             let motivationText = "";
             if(percent >= 100) {
                 pb.style.background = "linear-gradient(90deg, #1b5e20, #388e3c)";
@@ -203,7 +251,7 @@ function loadDashboard() {
             if (typeChartInstance) typeChartInstance.destroy();
             typeChartInstance = new Chart(document.getElementById('typeChart'), {
                 type: 'doughnut',
-                data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] },
+                data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: donutColors, borderWidth: 2 }] },
                 options: { 
                     responsive: true, maintainAspectRatio: false, cutout: '55%', 
                     plugins: { 
@@ -254,14 +302,13 @@ function openBreakdownModal() {
     
     document.getElementById('breakdown-modal').style.display = 'flex';
 
-    // หน่วงเวลา 100ms ให้ Modal เปิดสุดก่อนวาดกราฟ (แก้ปัญหากราฟไม่แสดงผล)
     setTimeout(() => {
         if (kannikaChartInstance) kannikaChartInstance.destroy();
         kannikaChartInstance = new Chart(document.getElementById('kannikaChart'), {
             type: 'doughnut',
             data: { 
                 labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], 
-                datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] 
+                datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: donutColors, borderWidth: 2 }] 
             },
             options: { 
                 responsive: true, maintainAspectRatio: false, cutout: '55%', 
@@ -277,7 +324,7 @@ function openBreakdownModal() {
             type: 'doughnut',
             data: { 
                 labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], 
-                datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] 
+                datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: donutColors, borderWidth: 2 }] 
             },
             options: { 
                 responsive: true, maintainAspectRatio: false, cutout: '55%', 
