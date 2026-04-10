@@ -64,8 +64,14 @@
                             <h4>ยอดรถเข้าแยกตามพนักงาน (คัน)</h4>
                             <div class="chart-container"><canvas id="crChart"></canvas></div>
                         </div>
+                        
                         <div class="chart-box">
-                            <h4>สัดส่วนช่องทางการนัดหมาย</h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h4 style="margin: 0; text-align: left;">สัดส่วนช่องทางการนัดหมาย</h4>
+                                <button onclick="openBreakdownModal()" class="btn-outline-blue" title="คลิกเพื่อดูสัดส่วนของแต่ละบุคคล">
+                                    <i class="fas fa-search-plus"></i> ดูแยกบุคคล
+                                </button>
+                            </div>
                             <div class="chart-container"><canvas id="typeChart"></canvas></div>
                         </div>
                     </div>
@@ -172,6 +178,26 @@
         </section>
 
     </main>
+
+    <div id="breakdown-modal" class="modal" style="display: none; z-index: 1200;">
+        <div class="modal-content" style="max-width: 900px; background: #f4f7f6;">
+            <span class="close" onclick="closeBreakdownModal()">&times;</span>
+            <h2 style="color: #0d47a1; border-bottom: 2px solid #bbdefb; padding-bottom: 10px; margin-top:0;">
+                <i class="fas fa-chart-pie" style="color:#1565c0;"></i> สัดส่วนช่องทางการนัดหมาย (รายบุคคล)
+            </h2>
+            
+            <div class="dash-charts-grid" style="margin-top: 20px; margin-bottom: 0;">
+                <div class="chart-box" style="background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <h4 style="color: #2e7d32;">👩‍💼 กรรณิกา</h4>
+                    <div class="chart-container" style="height: 250px;"><canvas id="kannikaChart"></canvas></div>
+                </div>
+                <div class="chart-box" style="background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <h4 style="color: #1565c0;">👩‍💼 เรืองศิริ</h4>
+                    <div class="chart-container" style="height: 250px;"><canvas id="ruangsiriChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="loading-overlay" class="overlay" style="display: none;">
         <div class="spinner"></div>
