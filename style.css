@@ -22,10 +22,9 @@ header {
 }
 .header-left { display: flex; align-items: center; flex: 1;}
 .header-logo { 
-    height: 70px; /* ขยายโลโก้ให้ใหญ่เบิ้มๆ */
+    height: 70px; 
     max-width: 250px; 
     object-fit: contain;
-    /* เอากรอบสีขาวและเงาออก เพื่อให้เนียนไปกับพื้นหลัง Header */
 }
 header h1 { 
     font-size: 24px; 
@@ -33,12 +32,12 @@ header h1 {
     font-weight: 700; 
     flex: 2; 
     text-align: center; 
-    color: #1b5e20; /* สีตัวหนังสือเขียวเข้ม ISUZU */
+    color: #1b5e20; 
 }
 .admin-header-btn {
     flex: 1; display: flex; justify-content: flex-end;
     background: none; border: none; 
-    color: #777; /* ปุ่ม Admin สีเทาเพื่อความเนียน */
+    color: #777; 
     font-size: 24px; cursor: pointer; transition: 0.2s;
 }
 .admin-header-btn:hover { color: #1565c0; transform: scale(1.1);}
@@ -175,7 +174,7 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .close { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; color: #888; line-height: 1; transition: 0.2s;}
 .close:hover { color: #d32f2f; transform: scale(1.2);}
 
-/* 📱 Responsive (ปรับ Logo ให้ย่อลงบนมือถืออย่างสมส่วน) 📱 */
+/* 📱 Responsive 📱 */
 @media (max-width: 768px) {
     header { padding: 10px 15px; }
     .header-logo { height: 50px; max-width: 150px;}
