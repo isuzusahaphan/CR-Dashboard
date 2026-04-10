@@ -6,15 +6,22 @@
     <title>Customer Relations Hub</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 <body>
     <header>
-        <div class="header-left"><img src="logo.png" alt="ISUZU SP Logo" class="header-logo"></div>
+        <div class="header-left">
+            <img src="logo.png" alt="ISUZU SP Logo" class="header-logo" data-tooltip="Customer Relations Department">
+        </div>
+        
         <h1>🚗 ศูนย์ข้อมูลลูกค้าสัมพันธ์ (CR Hub)</h1>
-        <button class="admin-header-btn" onclick="openAdminTab()"><i class="fas fa-user-shield"></i></button>
+        
+        <button class="admin-header-btn" onclick="openAdminTab()" data-tooltip="เข้าสู่ระบบสำหรับผู้ดูแล (Admin)">
+            <i class="fas fa-user-shield"></i>
+        </button>
     </header>
 
     <nav class="tabs">
@@ -22,54 +29,114 @@
         <button class="tab-btn" onclick="switchTab(event, 'tab-input')"><i class="fas fa-edit"></i> บันทึกข้อมูล</button>
         <button class="tab-btn" onclick="switchTab(event, 'tab-training')"><i class="fas fa-user-graduate"></i> ศูนย์ฝึกอบรม</button>
         <button class="tab-btn" onclick="switchTab(event, 'tab-reports')"><i class="fas fa-file-pdf"></i> รายงานสรุป</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-promo')"><i class="fas fa-bullhorn"></i> โปรโมชัน</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-promo')"><i class="fas fa-bullhorn"></i> ข้อมูลโปรโมชัน</button>
     </nav>
 
     <main>
         <section id="tab-dashboard" class="tab-content active">
-             <div class="card">
+            <div class="card">
                 <div class="dash-header">
-                    <h2>📊 Dashboard</h2>
+                    <h2>📊 กระดานแสดงผลการดำเนินงาน (Performance Dashboard)</h2>
                     <div class="dash-filters">
-                        <select id="dash_month" onchange="loadDashboard()"><option value="01">มกราคม</option><option value="02">กุมภาพันธ์</option><option value="03">มีนาคม</option><option value="04">เมษายน</option><option value="05">พฤษภาคม</option><option value="06">มิถุนายน</option><option value="07">กรกฎาคม</option><option value="08">สิงหาคม</option><option value="09">กันยายน</option><option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option></select>
-                        <select id="dash_year" onchange="loadDashboard()"><option value="2026">2026</option><option value="2027">2027</option></select>
+                        <select id="dash_month" onchange="loadDashboard()" data-tooltip="เลือกเดือนที่ต้องการแสดงผล">
+                            <option value="01">มกราคม</option><option value="02">กุมภาพันธ์</option><option value="03">มีนาคม</option>
+                            <option value="04">เมษายน</option><option value="05">พฤษภาคม</option><option value="06">มิถุนายน</option>
+                            <option value="07">กรกฎาคม</option><option value="08">สิงหาคม</option><option value="09">กันยายน</option>
+                            <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+                        </select>
+                        <select id="dash_year" onchange="loadDashboard()" data-tooltip="เลือกปีที่ต้องการแสดงผล">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                        </select>
                     </div>
                 </div>
+
                 <div class="progress-container">
-                    <div class="progress-labels"><span>เป้าหมายประจำเดือน: <span id="dash_target">0</span> คัน</span><span>รถเข้าจริง: <span id="dash_current">0</span> คัน</span></div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="dash_progress">0%</div></div>
-                    <div id="dash_motivation" style="text-align: center; margin-top: 15px; font-weight: 600; color: #1b5e20;"></div>
+                    <div class="progress-labels">
+                        <span>เป้าหมายการติดตามประจำเดือน: <span id="dash_target" style="color:#1565c0;">0</span> คัน</span>
+                        <span>ยอดรถเข้ารับบริการจริง: <span id="dash_current" style="color:#2e7d32;">0</span> คัน</span>
+                    </div>
+                    <div class="progress-bar-bg" data-tooltip="ความคืบหน้าเทียบกับเป้าหมายรวมประจำเดือน">
+                        <div class="progress-bar-fill" id="dash_progress">0%</div>
+                    </div>
+                    <div id="dash_motivation" style="text-align: center; margin-top: 15px; font-weight: 600; font-size: 14.5px; color: #1b5e20;"></div>
                 </div>
-                <div id="dash_loading" style="text-align: center; padding: 40px; color: #777;"><div class="spinner-small"></div> กำลังโหลด...</div>
+
+                <div id="dash_loading" style="text-align: center; padding: 40px; color: #777;"><div class="spinner-small"></div> กำลังประมวลผลข้อมูล...</div>
+                
                 <div id="dash_charts" style="display: none;">
                     <div class="dash-charts-grid">
-                        <div class="chart-box"><h4>ยอดรถเข้าจำแนกตามเจ้าหน้าที่</h4><div class="chart-container"><canvas id="crChart"></canvas></div><div style="text-align: center; font-size: 12px; margin-top:10px;">⏱️ ล่าสุด: <b>กรรณิกา</b> (<span id="update_kannika">-</span>) | <b>เรืองศิริ</b> (<span id="update_ruangsiri">-</span>)</div></div>
-                        <div class="chart-box"><div style="display:flex; justify-content:space-between;"><h4>สัดส่วนช่องทาง</h4><button onclick="openBreakdownModal()" class="btn-outline-blue">ดูรายบุคคล</button></div><div class="chart-container"><canvas id="typeChart"></canvas></div></div>
+                        <div class="chart-box">
+                            <h4 data-tooltip="แสดงยอดรวมรถเข้ารับบริการ แบ่งตามเจ้าหน้าที่ CR">ยอดรถเข้ารับบริการจำแนกตามเจ้าหน้าที่ (คัน)</h4>
+                            <div class="chart-container"><canvas id="crChart"></canvas></div>
+                            <div style="text-align: center; font-size: 12.5px; color: #555; margin-top: 15px; background: #e8f5e9; padding: 8px; border-radius: 6px; border: 1px solid #c8e6c9;">
+                                ⏱️ ข้อมูลล่าสุด: <b>กรรณิกา</b> (<span id="update_kannika" style="color:#2e7d32;">-</span>) | <b>เรืองศิริ</b> (<span id="update_ruangsiri" style="color:#1565c0;">-</span>)
+                            </div>
+                        </div>
+                        
+                        <div class="chart-box">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h4 style="margin: 0; text-align: left;" data-tooltip="แสดงสัดส่วนแหล่งที่มาของลูกค้าที่เข้ารับบริการ">สัดส่วนช่องทางการนัดหมาย</h4>
+                                <button onclick="openBreakdownModal()" class="btn-outline-blue" data-tooltip="ดูสัดส่วนการดึงลูกค้าเข้าของแต่ละบุคคล">
+                                    <i class="fas fa-search-plus"></i> ดูสัดส่วนรายบุคคล
+                                </button>
+                            </div>
+                            <div class="chart-container"><canvas id="typeChart"></canvas></div>
+                        </div>
                     </div>
+                    
                     <div id="dash_csv_tracking"></div>
                 </div>
-             </div>
+            </div>
         </section>
 
         <section id="tab-input" class="tab-content">
-             <div class="card" style="max-width: 600px; margin: 0 auto;">
-                <h2>📝 บันทึกข้อมูลปฏิบัติงาน</h2>
-                <div class="form-group"><label>👩‍💼 เจ้าหน้าที่ CR</label><select id="cr_name"><option value="กรรณิกา">กรรณิกา</option><option value="เรืองศิริ">เรืองศิริ</option></select></div>
-                <div class="form-group"><label>📅 วันที่</label><input type="date" id="record_date"></div>
-                <div class="form-group input-number-group"><label>1️⃣ รายชื่อตรีเพชร</label><input type="number" id="type_tripetch" value="0" oninput="calculateTotal()"></div>
-                <div class="form-group input-number-group"><label>2️⃣ ลูกค้าโทรนัดเอง</label><input type="number" id="type_inbound" value="0" oninput="calculateTotal()"></div>
-                <div class="form-group input-number-group"><label>3️⃣ Walk-in / แนะนำ</label><input type="number" id="type_referral" value="0" oninput="calculateTotal()"></div>
-                <div class="form-group total-box"><label>🚘 รวม</label><input type="number" id="type_total" value="0" readonly></div>
-                <button id="save-btn" class="btn-submit" onclick="saveRecord()">บันทึกข้อมูล</button>
-             </div>
+            <div class="card" style="max-width: 650px; margin: 0 auto;">
+                <h2>📝 บันทึกข้อมูลปฏิบัติงาน (Daily Service Log)</h2>
+                <div class="form-group">
+                    <label>👩‍💼 เจ้าหน้าที่ลูกค้าสัมพันธ์ (CR)</label>
+                    <select id="cr_name">
+                        <option value="กรรณิกา">กรรณิกา</option>
+                        <option value="เรืองศิริ">เรืองศิริ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>📅 วันที่ลูกค้าเข้ารับบริการ</label>
+                    <input type="date" id="record_date">
+                </div>
+                
+                <hr style="border: 0.5px dashed #ccc; margin: 20px 0;">
+
+                <div class="form-group input-number-group">
+                    <label data-tooltip="รายชื่อลูกค้าที่ได้ข้อมูลมาจากระบบฐานข้อมูลของตรีเพชรโดยตรง">1️⃣ รายชื่อจากระบบตรีเพชร (จำนวนคัน)</label>
+                    <input type="number" id="type_tripetch" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
+                </div>
+                <div class="form-group input-number-group">
+                    <label data-tooltip="ลูกค้าที่ทำการติดต่อเข้ามาเพื่อขอนัดหมายด้วยตนเอง (Inbound)">2️⃣ ลูกค้าติดต่อรับบริการด้วยตนเอง (จำนวนคัน)</label>
+                    <input type="number" id="type_inbound" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
+                </div>
+                <div class="form-group input-number-group">
+                    <label data-tooltip="ลูกค้าที่เดินทางมาเอง (Walk-in) หรือได้รับนัดหมายจากฝ่ายอื่น">3️⃣ ลูกค้า Walk-in / ได้รับการแนะนำ (จำนวนคัน)</label>
+                    <input type="number" id="type_referral" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
+                </div>
+
+                <div class="form-group total-box" data-tooltip="ผลรวมจำนวนรถยนต์ทั้งหมดที่เข้ารับบริการในวันนี้">
+                    <label>🚘 ยอดรวมรถยนต์เข้ารับบริการ (คัน)</label>
+                    <input type="number" id="type_total" value="0" readonly>
+                </div>
+                
+                <button id="save-btn" class="btn-submit" onclick="saveRecord()">
+                    <i class="fas fa-cloud-upload-alt"></i> บันทึกข้อมูลเข้าสู่ระบบ
+                </button>
+            </div>
         </section>
 
         <section id="tab-training" class="tab-content">
-            <div class="card">
-                <h2>📝 ศูนย์ฝึกอบรมและประเมินผล (Training Center)</h2>
+            <div class="card" style="max-width: 800px; margin: 0 auto;">
+                <h2 style="color: #0d47a1; border-bottom-color: #bbdefb;"><i class="fas fa-user-graduate" style="color: #1565c0;"></i> ศูนย์ฝึกอบรมและประเมินผล (Training Center)</h2>
                 
                 <div id="quiz-selection">
-                    <p style="color: #666; margin-bottom: 20px;">กรุณาเลือกชื่อผู้สอบและหัวข้อแบบทดสอบเพื่อเริ่มต้นการประเมิน</p>
+                    <p style="color: #666; margin-bottom: 20px;">กรุณาระบุชื่อเจ้าหน้าที่และเลือกหัวข้อแบบทดสอบเพื่อเริ่มต้นการประเมินผล</p>
                     <div class="form-group">
                         <label>👤 ชื่อพนักงานผู้เข้าสอบ</label>
                         <select id="quiz_user_name">
@@ -79,73 +146,141 @@
                     </div>
                     <div class="form-group">
                         <label>📖 หัวข้อแบบทดสอบ</label>
-                        <select id="quiz_topic_list"><option value="">-- กำลังโหลดหัวข้อ --</option></select>
+                        <select id="quiz_topic_list"><option value="">-- กำลังโหลดหัวข้อแบบทดสอบ --</option></select>
                     </div>
-                    <button class="btn-submit" onclick="prepareQuiz()" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">เริ่มทำแบบทดสอบ</button>
+                    <button class="btn-submit" onclick="prepareQuiz()" style="background: linear-gradient(135deg, #1565c0, #0d47a1); margin-top: 10px;">
+                        เริ่มทำแบบทดสอบ <i class="fas fa-play-circle"></i>
+                    </button>
                     
                     <hr style="margin: 30px 0; border: 0.5px dashed #ccc;">
-                    <h4>🏆 ประวัติการทำแบบทดสอบล่าสุด</h4>
+                    
+                    <h4 style="color: #1b5e20; margin-bottom: 15px;"><i class="fas fa-history"></i> ประวัติการทำแบบทดสอบล่าสุด</h4>
                     <div id="score-history-container" class="report-list"></div>
                 </div>
 
                 <div id="quiz-container" style="display: none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                        <h3 id="current_quiz_title" style="color:#0d47a1; margin:0;"></h3>
-                        <span id="quiz_step" style="background:#e3f2fd; padding:5px 12px; border-radius:15px; font-weight:bold; color:#1565c0;"></span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                        <h3 id="current_quiz_title" style="color:#0d47a1; margin:0; font-size: 18px;"></h3>
+                        <span id="quiz_step" style="background:#e3f2fd; padding:5px 12px; border-radius:15px; font-weight:bold; color:#1565c0; font-size: 14px;"></span>
                     </div>
                     <div id="question_box" class="quiz-card">
                         </div>
-                    <button id="next-q-btn" class="btn-submit" onclick="nextQuestion()" style="display:none;">ข้อถัดไป <i class="fas fa-arrow-right"></i></button>
+                    <button id="next-q-btn" class="btn-submit" onclick="nextQuestion()" style="display:none; background: linear-gradient(135deg, #fb8c00, #f57c00);">
+                        ข้อถัดไป <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
 
-                <div id="quiz-result" style="display: none; text-align: center; padding: 30px;">
-                    <div id="result-icon" style="font-size: 60px; margin-bottom: 20px;"></div>
-                    <h2 id="result-score-text"></h2>
-                    <p id="result-attempt-text" style="color: #666;"></p>
-                    <button class="btn-submit" onclick="resetQuiz()">กลับสู่หน้าหลัก</button>
+                <div id="quiz-result" style="display: none; text-align: center; padding: 40px 20px;">
+                    <div id="result-icon" style="font-size: 70px; margin-bottom: 20px;"></div>
+                    <h2 id="result-score-text" style="color: #1b5e20; font-size: 28px; margin-bottom: 10px;"></h2>
+                    <p id="result-attempt-text" style="color: #555; font-size: 16px; margin-bottom: 30px; font-weight: bold;"></p>
+                    <button class="btn-submit" onclick="resetQuiz()" style="max-width: 300px; margin: 0 auto; background: linear-gradient(135deg, #1565c0, #0d47a1);">กลับสู่หน้าหลัก</button>
                 </div>
             </div>
         </section>
 
         <section id="tab-reports" class="tab-content">
             <div class="card">
-                <div style="display:flex; justify-content:space-between;">
-                    <h2>📑 รายงานสรุป</h2>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h2>📑 รายงานสรุปผลการปฏิบัติงาน</h2>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">เอกสารรายงานสรุปผลการดำเนินงานของฝ่ายลูกค้าสัมพันธ์</p>
+                    </div>
                     <div class="report-filters">
-                        <select id="report_period_filter" onchange="filterReports()"><option value="all">ทุกเดือน</option></select>
-                        <select id="report_type_filter" onchange="filterReports()"><option value="all">ทั้งหมด</option><option value="รายสัปดาห์">รายสัปดาห์</option><option value="รายเดือน">รายเดือน</option></select>
+                        <div class="filter-group">
+                            <label>รอบประจำเดือน:</label>
+                            <select id="report_period_filter" onchange="filterReports()">
+                                <option value="all">ทุกเดือน (ทั้งหมด)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>ประเภทรายงาน:</label>
+                            <select id="report_type_filter" onchange="filterReports()">
+                                <option value="all">ทั้งหมด (รายสัปดาห์และเดือน)</option>
+                                <option value="รายสัปดาห์">เฉพาะรายสัปดาห์</option>
+                                <option value="รายเดือน">เฉพาะรายเดือน</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div id="reports-container" class="report-list"></div>
+
+                <div id="reports-container" class="report-list">
+                    <p style="text-align:center; color:#777; width: 100%;">กำลังดึงข้อมูลเอกสาร...</p>
+                </div>
             </div>
         </section>
+
         <section id="tab-promo" class="tab-content">
-            <div class="card"><h2>📚 โปรโมชัน</h2><div id="promo-container" class="promo-grid"></div></div>
+            <div class="card">
+                <h2>📚 คลังข้อมูลและโปรโมชัน (Information Hub)</h2>
+                <p style="font-size: 14px; color: #666; margin-bottom: 20px;">เอกสารแคมเปญส่งเสริมการขาย และคู่มือบริการสำหรับแจ้งให้ลูกค้าทราบ</p>
+                <div id="promo-container" class="promo-grid">
+                    <p style="text-align:center; color:#777; width: 100%;">กำลังดึงข้อมูลแคมเปญ...</p>
+                </div>
+            </div>
         </section>
 
         <section id="tab-admin" class="tab-content">
-            <div class="card" style="border-top: 5px solid #1565c0; max-width: 600px; margin: 0 auto;">
-                <h2>⚙️ Administrator</h2>
+            <div class="card" style="border-top: 5px solid #1565c0; max-width: 650px; margin: 0 auto;">
+                <h2 style="color: #0d47a1; border-bottom-color: #bbdefb;">⚙️ ระบบจัดการสำหรับผู้ดูแล (Administrator)</h2>
+                <p style="font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.5;">อัปโหลดฐานข้อมูล <b>.csv</b> ที่ส่งออกจากระบบตรีเพชร เพื่อปรับปรุงสถานะการติดตามลูกค้าแบบ Real-time</p>
+                
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <select id="admin_month" style="flex:1;"><option value="01">มกราคม</option><option value="02">กุมภาพันธ์</option><option value="03">มีนาคม</option><option value="04">เมษายน</option><option value="05">พฤษภาคม</option><option value="06">มิถุนายน</option><option value="07">กรกฎาคม</option><option value="08">สิงหาคม</option><option value="09">กันยายน</option><option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option></select>
-                    <select id="admin_year" style="flex:1;"><option value="2026">2026</option><option value="2027">2027</option></select>
+                    <div class="form-group" style="flex:1;">
+                        <label>อัปเดตข้อมูลประจำเดือน</label>
+                        <select id="admin_month">
+                            <option value="01">มกราคม</option><option value="02">กุมภาพันธ์</option><option value="03">มีนาคม</option>
+                            <option value="04">เมษายน</option><option value="05">พฤษภาคม</option><option value="06">มิถุนายน</option>
+                            <option value="07">กรกฎาคม</option><option value="08">สิงหาคม</option><option value="09">กันยายน</option>
+                            <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>ประจำปี</label>
+                        <select id="admin_year">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
                 </div>
-                <input type="file" id="csv_file" accept=".csv" style="margin-bottom:20px;">
-                <button id="upload-btn" class="btn-submit" onclick="uploadCSV()">อัปโหลดฐานข้อมูล</button>
+
+                <div class="form-group">
+                    <label data-tooltip="รองรับเฉพาะไฟล์นามสกุล .csv เท่านั้น"><i class="fas fa-file-csv" style="color:#1565c0;"></i> เลือกไฟล์ฐานข้อมูล (CSV File)</label>
+                    <input type="file" id="csv_file" accept=".csv" style="padding: 10px; font-size: 14px; background: #fff;">
+                </div>
+                
+                <button id="upload-btn" class="btn-submit" onclick="uploadCSV()" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+                    <i class="fas fa-database"></i> ปรับปรุงฐานข้อมูล
+                </button>
             </div>
         </section>
+
     </main>
 
-    <div id="breakdown-modal" class="modal" style="display: none;">
-        <div class="modal-content"><span class="close" onclick="closeBreakdownModal()">&times;</span>
-            <h2>📊 สัดส่วนนัดหมายรายบุคคล</h2>
-            <div class="dash-charts-grid">
-                <div class="chart-box"><h4>กรรณิกา</h4><div class="chart-container"><canvas id="kannikaChart"></canvas></div></div>
-                <div class="chart-box"><h4>เรืองศิริ</h4><div class="chart-container"><canvas id="ruangsiriChart"></canvas></div></div>
+    <div id="breakdown-modal" class="modal" style="display: none; z-index: 1200;">
+        <div class="modal-content" style="max-width: 900px; background: #f4f7f6;">
+            <span class="close" onclick="closeBreakdownModal()" data-tooltip="ปิดหน้าต่าง">&times;</span>
+            <h2 style="color: #0d47a1; border-bottom: 2px solid #bbdefb; padding-bottom: 10px; margin-top:0;">
+                <i class="fas fa-chart-pie" style="color:#1565c0;"></i> รายงานสัดส่วนการนัดหมาย (แยกตามเจ้าหน้าที่)
+            </h2>
+            
+            <div class="dash-charts-grid" style="margin-top: 20px; margin-bottom: 0;">
+                <div class="chart-box" style="background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <h4 style="color: #2e7d32;">👩‍💼 เจ้าหน้าที่: กรรณิกา</h4>
+                    <div class="chart-container" style="height: 250px;"><canvas id="kannikaChart"></canvas></div>
+                </div>
+                <div class="chart-box" style="background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <h4 style="color: #1565c0;">👩‍💼 เจ้าหน้าที่: เรืองศิริ</h4>
+                    <div class="chart-container" style="height: 250px;"><canvas id="ruangsiriChart"></canvas></div>
+                </div>
             </div>
         </div>
     </div>
-    <div id="loading-overlay" class="overlay" style="display: none;"><div class="spinner"></div><p>กำลังดำเนินการ...</p></div>
+
+    <div id="loading-overlay" class="overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p style="color: white; font-weight: bold; margin-top: 15px; font-size: 16px;">กำลังเชื่อมต่อฐานข้อมูล...</p>
+    </div>
 
     <script src="script.js"></script>
 </body>
