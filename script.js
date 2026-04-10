@@ -67,7 +67,7 @@ function uploadCSV() {
             .then(res => {
                 btn.innerHTML = '<i class="fas fa-database"></i> ปรับปรุงฐานข้อมูล'; btn.disabled = false;
                 if(res.result === 'success') { 
-                    alert("✅ ปรับปรุงฐานข้อมูลสำเร็จ! ข้อมูลถูกเขียนทับในเดือนที่ระบุเรียบร้อยแล้ว"); 
+                    alert("✅ ปรับปรุงฐานข้อมูลสำเร็จ! ข้อมูลถูกบันทึกในเดือนที่ระบุเรียบร้อยแล้ว"); 
                     fileInput.value = ""; 
                     document.getElementById('dash_month').value = adminMonth;
                     document.getElementById('dash_year').value = adminYear;
@@ -95,7 +95,7 @@ function saveRecord() {
     if (!recordDate) return alert("⚠️ กรุณาระบุวันที่ก่อนทำรายการ");
     
     const tot = parseInt(document.getElementById('type_total').value) || 0;
-    if (tot === 0 && !confirm("ยอดรวมรถเข้าเป็น 0 คัน ยืนยันที่จะส่งข้อมูลเข้าระบบหรือไม่?")) return;
+    if (tot === 0 && !confirm("ยอดรวมรถเข้ารับบริการเป็น 0 คัน ยืนยันที่จะส่งข้อมูลเข้าสู่ระบบหรือไม่?")) return;
 
     localStorage.setItem('cr_hub_name', crName);
     const payload = { action: "save_record", date: recordDate, cr_name: crName, 
@@ -146,6 +146,15 @@ function loadReports() {
     });
 }
 
+// ✨ ฟังก์ชันคำนวณ 2 บรรทัด (จำนวน + เปอร์เซ็นต์) สำหรับกราฟโดนัท
+const donutFormatter = (value, ctx) => {
+    if(value === 0) return '';
+    let sum = 0;
+    ctx.chart.data.datasets[0].data.forEach(data => { sum += data; });
+    let percentage = (value * 100 / sum).toFixed(1) + "%";
+    return [value + " คัน", "(" + percentage + ")"]; // คืนค่าเป็น Array เพื่อให้ขึ้นบรรทัดใหม่
+};
+
 function loadDashboard() {
     const month = document.getElementById('dash_month').value; const year = document.getElementById('dash_year').value;
     document.getElementById('dash_loading').style.display = 'block'; document.getElementById('dash_charts').style.display = 'none';
@@ -163,10 +172,26 @@ function loadDashboard() {
             let percent = d.target > 0 ? Math.round((d.current / d.target) * 100) : 0;
             const pb = document.getElementById('dash_progress');
             pb.style.width = (percent > 100 ? 100 : percent) + '%'; pb.innerText = percent + '%';
-            if(percent >= 100) pb.style.background = "linear-gradient(90deg, #1b5e20, #388e3c)";
-            else if(percent >= 80) pb.style.background = "linear-gradient(90deg, #388e3c, #81c784)";
-            else if(percent >= 50) pb.style.background = "linear-gradient(90deg, #1565c0, #4fc3f7)";
-            else pb.style.background = "linear-gradient(90deg, #d32f2f, #e57373)";
+            
+            // 🤖 ระบบ AI แจ้งข้อความให้กำลังใจตามผลงาน
+            let motivationText = "";
+            if(percent >= 100) {
+                pb.style.background = "linear-gradient(90deg, #1b5e20, #388e3c)";
+                motivationText = "🏆 ยอดเยี่ยมเหนือความคาดหมาย! ผลงานทะลุเป้าหมายประจำเดือนแล้ว ขอเสียงปรบมือให้ทีม CR ครับ 🎉";
+            }
+            else if(percent >= 80) {
+                pb.style.background = "linear-gradient(90deg, #388e3c, #81c784)";
+                motivationText = "🔥 โค้งสุดท้ายแล้ว! ผลงานทะลุ 80% ลุยอีกนิดเดียวเป้าหมายอยู่แค่เอื้อมครับ 🚀";
+            }
+            else if(percent >= 50) {
+                pb.style.background = "linear-gradient(90deg, #1565c0, #4fc3f7)";
+                motivationText = "💪 เดินทางมาเกินครึ่งทางแล้ว! รักษามาตรฐานการทำงานที่ยอดเยี่ยมนี้ต่อไปครับ ✨";
+            }
+            else {
+                pb.style.background = "linear-gradient(90deg, #d32f2f, #e57373)";
+                motivationText = "🌱 เริ่มต้นเป้าหมายใหม่ ค่อยๆ สะสมยอดไปทีละคัน เป็นกำลังใจให้ทีม CR ทุกคนครับ ✌️";
+            }
+            document.getElementById('dash_motivation').innerHTML = motivationText;
 
             if (crChartInstance) crChartInstance.destroy();
             crChartInstance = new Chart(document.getElementById('crChart'), {
@@ -179,7 +204,15 @@ function loadDashboard() {
             typeChartInstance = new Chart(document.getElementById('typeChart'), {
                 type: 'doughnut',
                 data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 13 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 16 }, formatter: v => v > 0 ? v : '' } } }
+                options: { 
+                    responsive: true, maintainAspectRatio: false, cutout: '55%', 
+                    plugins: { 
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 13 } } }, 
+                        datalabels: { 
+                            color: '#fff', font: { weight: 'bold', size: 13 }, textAlign: 'center', formatter: donutFormatter
+                        } 
+                    } 
+                }
             });
 
             if (d.csvData && d.csvData.length > 0) {
@@ -215,17 +248,13 @@ function loadDashboard() {
     }).catch(e => { document.getElementById('dash_loading').innerText = "โหลดข้อมูลล้มเหลว"; });
 }
 
-// ---------------------------------------------------
-// 🚀 แก้ไขฟังก์ชันเปิด Modal (หน่วงเวลาให้วาดกราฟติดชัวร์)
-// ---------------------------------------------------
 function openBreakdownModal() {
     if (!currentDashboardData) return alert("⚠️ ข้อมูลยังไม่พร้อม กรุณารอสักครู่");
     const d = currentDashboardData;
     
-    // 1. เปิดหน้าต่าง Modal ออกมาก่อน
     document.getElementById('breakdown-modal').style.display = 'flex';
 
-    // 2. ใช้ setTimeout หน่วงเวลา 100 มิลลิวินาที ให้หน้าต่างกางสุดก่อนวาดกราฟ
+    // หน่วงเวลา 100ms ให้ Modal เปิดสุดก่อนวาดกราฟ (แก้ปัญหากราฟไม่แสดงผล)
     setTimeout(() => {
         if (kannikaChartInstance) kannikaChartInstance.destroy();
         kannikaChartInstance = new Chart(document.getElementById('kannikaChart'), {
@@ -234,7 +263,13 @@ function openBreakdownModal() {
                 labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], 
                 datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] 
             },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } } }
+            options: { 
+                responsive: true, maintainAspectRatio: false, cutout: '55%', 
+                plugins: { 
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, 
+                    datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', formatter: donutFormatter } 
+                } 
+            }
         });
 
         if (ruangsiriChartInstance) ruangsiriChartInstance.destroy();
@@ -244,7 +279,13 @@ function openBreakdownModal() {
                 labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], 
                 datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] 
             },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } } }
+            options: { 
+                responsive: true, maintainAspectRatio: false, cutout: '55%', 
+                plugins: { 
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, 
+                    datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', formatter: donutFormatter } 
+                } 
+            }
         });
     }, 100);
 }
