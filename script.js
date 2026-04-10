@@ -1,43 +1,33 @@
-// 🎯 กำหนด URL ของ Google Apps Script ที่คุณรณกฤตให้มา
 const API_URL = "https://script.google.com/macros/s/AKfycbyz-B3bW7G5OgqCHJWXmIvDnxzks_Itp7yErwZ8t77DhiQdsFzklhxz9V6hS_s_ijoO3A/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. ตั้งค่าวันที่เริ่มต้นให้เป็น "วันนี้" อัตโนมัติ
-    const today = new Date().toLocaleDateString('en-CA'); // Format YYYY-MM-DD
+    const today = new Date().toLocaleDateString('en-CA');
     document.getElementById('record_date').value = today;
     
-    // 2. ดึงชื่อ CR ที่เคยเลือกไว้ล่าสุด (ช่วยลดขั้นตอนให้ CR ไม่ต้องกดเลือกบ่อยๆ)
     const savedCR = localStorage.getItem('cr_hub_name');
     if (savedCR) {
         document.getElementById('cr_name').value = savedCR;
     }
 });
 
-// ฟังก์ชันสลับหน้าต่าง Tabs (เมนูด้านล่าง)
 function switchTab(evt, tabId) {
-    // ซ่อนเนื้อหาทั้งหมด และเอาขีดแดง (Active) ออกจากปุ่มทั้งหมด
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    
-    // โชว์เนื้อหาที่กด และขีดแดงที่ปุ่มที่กด
     document.getElementById(tabId).classList.add('active');
     evt.currentTarget.classList.add('active');
+
+    // โหลดข้อมูลอัตโนมัติเมื่อกดเปลี่ยนแท็บ
+    if (tabId === 'tab-promo') loadPromotions();
+    if (tabId === 'tab-reports') loadReports();
 }
 
-// ฟังก์ชันคำนวณยอดรถรวมอัตโนมัติ ทันทีที่ CR พิมพ์ตัวเลข
 function calculateTotal() {
-    // ดึงค่ามาแปลงเป็นตัวเลข ถ้าช่องว่างให้มองเป็น 0
     const tripetch = parseInt(document.getElementById('type_tripetch').value) || 0;
     const inbound = parseInt(document.getElementById('type_inbound').value) || 0;
     const referral = parseInt(document.getElementById('type_referral').value) || 0;
-    
-    const total = tripetch + inbound + referral;
-    
-    // แสดงผลที่ช่องรวม
-    document.getElementById('type_total').value = total;
+    document.getElementById('type_total').value = tripetch + inbound + referral;
 }
 
-// ฟังก์ชันไฮไลท์หลัก: ดึงข้อมูลส่งเข้า Google Sheets
 function saveRecord() {
     const crName = document.getElementById('cr_name').value;
     const recordDate = document.getElementById('record_date').value;
@@ -46,22 +36,13 @@ function saveRecord() {
     const referral = parseInt(document.getElementById('type_referral').value) || 0;
     const total = parseInt(document.getElementById('type_total').value) || 0;
 
-    // ดักจับ: ถ้าลืมใส่วันที่
-    if (!recordDate) {
-        alert("⚠️ กรุณาเลือกวันที่ก่อนบันทึกผลงานครับ");
-        return;
-    }
-
-    // ดักจับ: ถ้าไม่มียอดรถเข้าเลย
+    if (!recordDate) return alert("⚠️ กรุณาเลือกวันที่ก่อนบันทึกผลงานครับ");
     if (total === 0) {
-        const confirmEmpty = confirm("วันนี้ยังไม่มียอดรถเข้าเลย (รวม 0 คัน) ยืนยันที่จะบันทึกใช่หรือไม่?");
-        if(!confirmEmpty) return;
+        if(!confirm("วันนี้ยังไม่มียอดรถเข้าเลย (รวม 0 คัน) ยืนยันที่จะบันทึกใช่หรือไม่?")) return;
     }
 
-    // 💾 บันทึกความจำลงในเครื่องมือถือ ว่าผู้ใช้นี้คือใคร (เช่น เรืองศิริ)
     localStorage.setItem('cr_hub_name', crName);
 
-    // แพ็กข้อมูลเตรียมส่ง
     const payload = {
         action: "save_record",
         date: recordDate,
@@ -72,16 +53,13 @@ function saveRecord() {
         total: total
     };
 
-    // แสดงหน้าจอโหลดดิ้ง
     const btn = document.getElementById('save-btn');
     const overlay = document.getElementById('loading-overlay');
     btn.disabled = true;
     overlay.style.display = "flex";
 
-    // 🚀 ยิงข้อมูลไปที่ Google Sheets
     fetch(API_URL, {
         method: 'POST',
-        // ส่งข้อมูลเป็น JSON String ไปให้ Web App อ่าน
         body: JSON.stringify(payload)
     })
     .then(response => response.json())
@@ -91,28 +69,114 @@ function saveRecord() {
         
         if(data.result === 'success') {
             alert("✅ บันทึกผลงานเรียบร้อยแล้วครับ ลุยต่อได้เลย!");
-            
-            // รีเซ็ตเฉพาะช่องตัวเลขให้กลับเป็น 0 เพื่อรอคีย์ข้อมูลใหม่
             document.getElementById('type_tripetch').value = 0;
             document.getElementById('type_inbound').value = 0;
             document.getElementById('type_referral').value = 0;
             calculateTotal();
         } else {
-            alert("❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: " + data.message);
+            alert("❌ เกิดข้อผิดพลาด: " + data.message);
         }
     })
     .catch(error => {
-        // ดัก Error เผื่อเน็ตหลุดหรือมีปัญหา CORS
         overlay.style.display = "none";
         btn.disabled = false;
-        
-        // *หมายเหตุ: บางเบราว์เซอร์จะบล็อกการอ่านค่ากลับจาก GAS ทำให้ขึ้น Error (CORS) 
-        // แต่จริงๆ ข้อมูลวิ่งเข้าชีตไปแล้ว เราเลยเขียนแจ้งเตือนแบบเนียนๆ ให้ CR สบายใจ
-        alert("✅ ส่งข้อมูลสำเร็จ! (ถ้าพบยอดไม่ขึ้นในชีต ให้ลองตรวจสอบอินเทอร์เน็ตอีกครั้ง)");
-        
+        alert("✅ ส่งข้อมูลสำเร็จ! (ถ้ายอดไม่ขึ้นในชีต ให้ลองตรวจสอบอินเทอร์เน็ตอีกครั้ง)");
         document.getElementById('type_tripetch').value = 0;
         document.getElementById('type_inbound').value = 0;
         document.getElementById('type_referral').value = 0;
         calculateTotal();
     });
+}
+
+// ---------------------------------------------------
+// 🚀 เฟส 2: ดึงข้อมูลจาก Google Sheets (GET)
+// ---------------------------------------------------
+
+// 1. ดึงคลังอาวุธลับ (พร้อมระบบคัดกรองวันที่หมดอายุ)
+function loadPromotions() {
+    const container = document.getElementById('promo-container');
+    container.innerHTML = '<div class="spinner-small"></div>';
+    
+    fetch(API_URL + "?action=get_promos")
+    .then(r => r.json())
+    .then(data => {
+        if(data.result === 'success' && data.data.length > 0) {
+            let html = '';
+            const today = new Date();
+            today.setHours(0,0,0,0); // รีเซ็ตเวลาเป็น 00:00:00 เพื่อเทียบแค่วันที่
+
+            data.data.forEach(item => {
+                let isValid = true;
+                
+                // กรองวันที่เริ่มต้น: ถ้าใส่วันเริ่ม และวันนี้ยังไม่ถึง ให้ซ่อน
+                if (item.startDate) {
+                    let sDate = new Date(item.startDate);
+                    sDate.setHours(0,0,0,0);
+                    if (today < sDate) isValid = false;
+                }
+                
+                // กรองวันที่สิ้นสุด: ถ้าใส่วันหมดอายุ และวันนี้เลยมาแล้ว ให้ซ่อน
+                if (item.endDate) {
+                    let eDate = new Date(item.endDate);
+                    eDate.setHours(0,0,0,0);
+                    if (today > eDate) isValid = false;
+                }
+
+                // ถ้าระยะเวลาถูกต้อง ให้สร้างการ์ดแสดงผล
+                if(isValid) {
+                    // แอบเพิ่มลูกเล่น โชว์วันที่หมดอายุเป็นตัวสีแดงไว้เตือนความจำ CR ด้วยครับ
+                    let expireText = item.endDate ? `<p style="font-size:11px; color:#d32f2f; margin-bottom:10px;"><i class="fas fa-clock"></i> หมดเขต: ${item.endDate}</p>` : '';
+                    
+                    html += `
+                    <div class="promo-card">
+                        <span style="font-size:11px; background:#e8eaf6; padding:3px 8px; border-radius:12px; color:#3f51b5; font-weight:bold;">${item.category}</span>
+                        <h4 style="margin-top: 10px;">${item.title}</h4>
+                        <p>${item.desc}</p>
+                        ${expireText}
+                        <a href="${item.link}" target="_blank" class="btn-view"><i class="fas fa-external-link-alt"></i> เปิดดูไฟล์</a>
+                    </div>`;
+                }
+            });
+
+            if(html === '') {
+                container.innerHTML = '<p style="text-align:center; color:#777; width:100%;">ไม่มีโปรโมชั่นในช่วงเวลานี้ครับ</p>';
+            } else {
+                container.innerHTML = html;
+            }
+        } else {
+            container.innerHTML = '<p style="text-align:center; color:#777; width:100%;">ยังไม่มีโปรโมชั่นในระบบครับ</p>';
+        }
+    }).catch(e => container.innerHTML = '<p style="color:red; text-align:center; width:100%;">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่</p>');
+}
+
+// 2. ดึงรายงานภาพรวม (ไม่แยกบุคคลแล้ว)
+function loadReports() {
+    const container = document.getElementById('reports-container');
+    container.innerHTML = '<div class="spinner-small"></div>';
+    
+    fetch(API_URL + "?action=get_reports")
+    .then(r => r.json())
+    .then(data => {
+        if(data.result === 'success' && data.data.length > 0) {
+            let html = '';
+            // กลับด้าน Array เพื่อให้รายงานที่อัปโหลดล่าสุด (บรรทัดล่างสุดในชีต) โชว์ขึ้นมาก่อน
+            const reversedData = data.data.reverse(); 
+
+            reversedData.forEach(item => {
+                const typeClass = item.type === 'รายเดือน' ? 'monthly' : '';
+                const icon = item.type === 'รายเดือน' ? 'fa-calendar-alt' : 'fa-calendar-week';
+                html += `
+                <div class="report-item ${typeClass}">
+                    <div class="report-info">
+                        <h4><i class="fas ${icon}" style="color: #777;"></i> ${item.filename}</h4>
+                        <p>รอบ: <b>${item.period}</b> | ชนิด: ${item.type}</p>
+                    </div>
+                    <a href="${item.link}" target="_blank" class="btn-view" style="width:auto; padding: 10px 15px;"><i class="fas fa-file-pdf"></i> เปิดดู</a>
+                </div>`;
+            });
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = `<p style="text-align:center; color:#777; width:100%;">ยังไม่มีรายงานในระบบครับ</p>`;
+        }
+    }).catch(e => container.innerHTML = '<p style="color:red; text-align:center; width:100%;">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่</p>');
 }
