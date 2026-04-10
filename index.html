@@ -6,7 +6,10 @@
     <title>CR Assistant Hub</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 <body>
     <header>
@@ -14,17 +17,17 @@
     </header>
 
     <nav class="tabs">
-        <button class="tab-btn active" onclick="switchTab(event, 'tab-input')"><i class="fas fa-edit"></i> บันทึกผลงาน</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-dashboard')"><i class="fas fa-chart-line"></i> กระดานสรุป</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-reports')"><i class="fas fa-file-pdf"></i> รายงานภาพรวม</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-promo')"><i class="fas fa-gift"></i> คลังอาวุธลับ</button>
+        <button class="tab-btn active" onclick="switchTab(event, 'tab-input')"><i class="fas fa-edit"></i> บันทึกงาน</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-dashboard')"><i class="fas fa-chart-line"></i> Dashboard</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-reports')"><i class="fas fa-file-pdf"></i> รายงาน</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-promo')"><i class="fas fa-gift"></i> โปรโมชั่น</button>
+        <button class="tab-btn" id="admin-tab-btn" onclick="openAdminTab()" style="color: #607d8b;"><i class="fas fa-user-shield"></i> Admin</button>
     </nav>
 
     <main>
         <section id="tab-input" class="tab-content active">
             <div class="card">
                 <h2>📝 บันทึกรถเข้ารับบริการ (Daily Log)</h2>
-                
                 <div class="form-group">
                     <label>👩‍💼 ชื่อผู้รับผิดชอบ (CR)</label>
                     <select id="cr_name">
@@ -32,7 +35,6 @@
                         <option value="เรืองศิริ">เรืองศิริ</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label>📅 วันที่นัดหมาย</label>
                     <input type="date" id="record_date">
@@ -44,12 +46,10 @@
                     <label>1️⃣ รายชื่อจากระบบตรีเพชร (คัน)</label>
                     <input type="number" id="type_tripetch" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
                 </div>
-                
                 <div class="form-group input-number-group">
                     <label>2️⃣ ลูกค้าโทรนัดหมายเอง (คัน)</label>
                     <input type="number" id="type_inbound" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
                 </div>
-                
                 <div class="form-group input-number-group">
                     <label>3️⃣ ได้รับนัดหมายจากคนอื่น/Walk-in (คัน)</label>
                     <input type="number" id="type_referral" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
@@ -108,6 +108,8 @@
                     <div class="chart-container" style="height: 220px;">
                         <canvas id="typeChart"></canvas>
                     </div>
+                    
+                    <div id="dash_csv_tracking"></div>
                 </div>
             </div>
         </section>
@@ -124,11 +126,26 @@
 
         <section id="tab-promo" class="tab-content">
             <div class="card">
-                <h2>📚 คลังอาวุธลับ (Promo & Info)</h2>
-                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">อัปเดตโปรโมชั่นและคู่มือล่าสุด สำหรับส่งต่อให้ลูกค้า</p>
+                <h2>📚 คลังอาวุธลับ (Promo)</h2>
                 <div id="promo-container" class="promo-grid">
                     <p style="text-align:center; color:#777; width: 100%;">กำลังโหลดข้อมูล...</p>
                 </div>
+            </div>
+        </section>
+
+        <section id="tab-admin" class="tab-content">
+            <div class="card" style="border-top: 5px solid #607d8b;">
+                <h2 style="color: #455a64; border-bottom-color: #cfd8dc;">⚙️ ผู้ดูแลระบบ (Admin)</h2>
+                <p style="font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5;">อัปโหลดไฟล์ <b>data.csv</b> ที่ดาวน์โหลดจากระบบตรีเพชร เพื่ออัปเดตสถานะการโทรตามลูกค้าให้ทีม CR ได้เห็นแบบ Real-time</p>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-file-csv" style="color:#2196f3;"></i> เลือกไฟล์ CSV ข้อมูลปัจจุบัน</label>
+                    <input type="file" id="csv_file" accept=".csv" style="padding: 10px; font-size: 14px; background: #fff;">
+                </div>
+                
+                <button id="upload-btn" class="btn-submit" onclick="uploadCSV()" style="background: linear-gradient(135deg, #607d8b, #455a64);">
+                    <i class="fas fa-rocket"></i> อัปโหลดฐานข้อมูล
+                </button>
             </div>
         </section>
 
