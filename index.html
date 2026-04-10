@@ -13,7 +13,11 @@
 </head>
 <body>
     <header>
+        <div style="width: 24px;"></div> 
         <h1>🚗 CR Command Center</h1>
+        <button class="admin-header-btn" onclick="openAdminTab()" title="สำหรับผู้ดูแลระบบ">
+            <i class="fas fa-user-cog"></i>
+        </button>
     </header>
 
     <nav class="tabs">
@@ -21,7 +25,6 @@
         <button class="tab-btn" onclick="switchTab(event, 'tab-dashboard')"><i class="fas fa-chart-line"></i> Dashboard</button>
         <button class="tab-btn" onclick="switchTab(event, 'tab-reports')"><i class="fas fa-file-pdf"></i> รายงาน</button>
         <button class="tab-btn" onclick="switchTab(event, 'tab-promo')"><i class="fas fa-gift"></i> โปรโมชั่น</button>
-        <button class="tab-btn" id="admin-tab-btn" onclick="openAdminTab()" style="color: #607d8b;"><i class="fas fa-user-shield"></i> Admin</button>
     </nav>
 
     <main>
