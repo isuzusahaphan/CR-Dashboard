@@ -7,11 +7,11 @@ body {
     padding-bottom: 40px; 
 }
 
-/* 🌟 Header 🌟 */
+/* 🌟 Header (โทนเขียวตัดน้ำเงิน + Logo) 🌟 */
 header { 
     background: linear-gradient(135deg, #1b5e20, #0d47a1); 
     color: white; 
-    padding: 18px 30px; 
+    padding: 15px 30px; 
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -20,12 +20,21 @@ header {
     top: 0;
     z-index: 100;
 }
-header h1 { font-size: 22px; margin: 0; font-weight: 600; flex: 1; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
-.admin-header-btn {
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px;
-    width: 40px; height: 40px; font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+.header-left { display: flex; align-items: center; flex: 1;}
+.header-logo { 
+    height: 40px; 
+    background: #fff; /* ทำกล่องสีขาวรองรับโลโก้ให้ดูพรีเมียม */
+    padding: 5px 12px; 
+    border-radius: 6px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+    object-fit: contain;
 }
-.admin-header-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05);}
+header h1 { font-size: 22px; margin: 0; font-weight: 600; flex: 2; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
+.admin-header-btn {
+    flex: 1; display: flex; justify-content: flex-end;
+    background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; transition: 0.2s;
+}
+.admin-header-btn:hover { color: white; transform: scale(1.1);}
 
 /* 🌟 Tabs Navigation 🌟 */
 .tabs { 
@@ -87,7 +96,6 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .chart-box h4 { color: #555; text-align: center; margin-bottom: 15px; font-size: 16px; font-weight: 600;}
 .chart-container { position: relative; height: 280px; width: 100%; }
 
-/* ปุ่มพิเศษ */
 .btn-outline-blue {
     background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
 }
@@ -104,6 +112,18 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .progress-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 16px; color: #333; }
 .progress-bar-bg { width: 100%; background-color: #e0e0e0; border-radius: 12px; height: 28px; overflow: hidden; position: relative;}
 .progress-bar-fill { background: linear-gradient(90deg, #2e7d32, #4caf50); height: 100%; width: 0%; transition: width 1.5s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
+
+/* 🌟 Tooltips (ช่วยเพิ่มมิติให้หน้าเว็บ) 🌟 */
+[data-tooltip] { position: relative; cursor: help; }
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+    background: rgba(33, 33, 33, 0.95); color: #fff; padding: 8px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: normal; white-space: nowrap;
+    opacity: 0; visibility: hidden; transition: 0.2s ease; z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); pointer-events: none;
+}
+[data-tooltip]:hover::after { opacity: 1; visibility: visible; }
 
 /* 🌟 Forms 🌟 */
 .form-group { margin-bottom: 20px; }
@@ -142,7 +162,7 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .report-info h4 { margin: 0 0 8px 0; font-size: 16px; color: #333;}
 .report-info p { margin: 0; font-size: 13px; color: #777;}
 
-/* 🌟 Modals (เพิ่มมาสำหรับกราฟแยก) 🌟 */
+/* 🌟 Modals (แก้ปัญหาโหลดกราฟไม่ขึ้น) 🌟 */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;}
 .modal-content { background: white; padding: 30px; border-radius: 12px; width: 100%; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 .close { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; color: #888; line-height: 1; transition: 0.2s;}
@@ -155,6 +175,7 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
     .card { padding: 20px 15px; }
     main { padding: 15px 10px; }
     .modal-content { padding: 20px; }
+    header h1 { font-size: 16px; }
 }
 
 /* 🌟 Utilities & Spinner 🌟 */
