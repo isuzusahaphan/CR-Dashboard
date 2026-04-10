@@ -136,27 +136,19 @@ function loadPromotions() {
     });
 }
 
-// ---------------------------------------------------
-// 🚀 ระบบดึงรายงานและ Filter 2 เงื่อนไข (เดือน + ประเภท)
-// ---------------------------------------------------
 function loadReports() {
     const container = document.getElementById('reports-container'); container.innerHTML = '<div class="spinner-small"></div>';
     fetch(API_URL + "?action=get_reports").then(r => r.json()).then(data => {
         if(data.result === 'success' && data.data.length > 0) {
             allReportsList = data.data.reverse(); 
-
-            // สร้าง Dropdown ให้เลือก "รอบประจำเดือน" อัตโนมัติ
             const periodDropdown = document.getElementById('report_period_filter');
             const uniquePeriods = [...new Set(allReportsList.map(item => item.period))]; 
             let options = '<option value="all">ทุกเดือน (ทั้งหมด)</option>';
             uniquePeriods.forEach(p => {
-                // เซ็ตค่าล่าสุดให้ถูกเลือกเป็นค่าเริ่มต้น
                 let isSelected = (p === uniquePeriods[0]) ? "selected" : "";
                 options += `<option value="${p}" ${isSelected}>${p}</option>`;
             });
             periodDropdown.innerHTML = options;
-
-            // สั่งกรองข้อมูลครั้งแรก
             filterReports();
         } else {
             container.innerHTML = `<p style="text-align:center; width:100%;">ไม่พบเอกสารรายงาน</p>`;
@@ -263,8 +255,18 @@ function loadDashboard() {
                 }
             });
 
+            // 🎯 แสดงข้อมูล CSV พร้อม Badge เวลาอัปเดตล่าสุด
             if (d.csvData && d.csvData.length > 0) {
-                let csvHtml = '<div style="grid-column: 1 / -1;"><h3 style="color:#0d47a1; margin-top:20px; border-bottom:2px solid #bbdefb; padding-bottom:10px;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3></div>';
+                // จัดการเรื่อง Badge เวลา
+                let lastUpdateBadge = d.csvLastUpdate && d.csvLastUpdate !== '-' 
+                    ? `<span style="font-size: 12px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 12px; font-weight: normal; margin-left: 10px; border: 1px solid #bbdefb;"><i class="fas fa-history"></i> ล่าสุด: ${d.csvLastUpdate}</span>` 
+                    : '';
+
+                let csvHtml = `<div style="grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; margin-top:20px; border-bottom:2px solid #bbdefb; padding-bottom:10px;">
+                                <h3 style="color:#0d47a1; margin: 0;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3>
+                                ${lastUpdateBadge}
+                              </div>`;
+
                 d.csvData.forEach(item => {
                     const needToCall = item.tracked + item.untracked; 
                     let actualPercent = needToCall === 0 ? 100 : Math.round((item.tracked / needToCall) * 100);
