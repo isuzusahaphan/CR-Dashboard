@@ -1,9 +1,24 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyz-B3bW7G5OgqCHJWXmIvDnxzks_Itp7yErwZ8t77DhiQdsFzklhxz9V6hS_s_ijoO3A/exec";
 
+// ตัวแปรเก็บกราฟ เพื่อให้เคลียร์กราฟเก่าทิ้งก่อนวาดใหม่ได้
+let crChartInstance = null;
+let typeChartInstance = null;
+
 document.addEventListener("DOMContentLoaded", () => {
-    const today = new Date().toLocaleDateString('en-CA');
-    document.getElementById('record_date').value = today;
+    const today = new Date();
+    document.getElementById('record_date').value = today.toLocaleDateString('en-CA');
     
+    // เซ็ตให้ Dropdown เดือน/ปี ใน Dashboard ตรงกับปัจจุบัน
+    let mm = String(today.getMonth() + 1).padStart(2, '0');
+    let yyyy = String(today.getFullYear());
+    // บังคับเปลี่ยนเป็นเมษา 2026 ตาม context
+    if(document.getElementById('dash_month').querySelector(`option[value="${mm}"]`)) {
+        document.getElementById('dash_month').value = mm;
+    }
+    if(document.getElementById('dash_year').querySelector(`option[value="${yyyy}"]`)) {
+        document.getElementById('dash_year').value = yyyy;
+    }
+
     const savedCR = localStorage.getItem('cr_hub_name');
     if (savedCR) {
         document.getElementById('cr_name').value = savedCR;
@@ -16,9 +31,9 @@ function switchTab(evt, tabId) {
     document.getElementById(tabId).classList.add('active');
     evt.currentTarget.classList.add('active');
 
-    // โหลดข้อมูลอัตโนมัติเมื่อกดเปลี่ยนแท็บ
     if (tabId === 'tab-promo') loadPromotions();
     if (tabId === 'tab-reports') loadReports();
+    if (tabId === 'tab-dashboard') loadDashboard(); // โหลดกราฟเมื่อกดเปิดแท็บ 2
 }
 
 function calculateTotal() {
@@ -89,10 +104,8 @@ function saveRecord() {
 }
 
 // ---------------------------------------------------
-// 🚀 เฟส 2: ดึงข้อมูลจาก Google Sheets (GET)
+// 🚀 เฟส 2: ดึงข้อมูล (Promo & Reports)
 // ---------------------------------------------------
-
-// 1. ดึงคลังอาวุธลับ (พร้อมระบบคัดกรองวันที่หมดอายุ)
 function loadPromotions() {
     const container = document.getElementById('promo-container');
     container.innerHTML = '<div class="spinner-small"></div>';
@@ -103,30 +116,23 @@ function loadPromotions() {
         if(data.result === 'success' && data.data.length > 0) {
             let html = '';
             const today = new Date();
-            today.setHours(0,0,0,0); // รีเซ็ตเวลาเป็น 00:00:00 เพื่อเทียบแค่วันที่
+            today.setHours(0,0,0,0);
 
             data.data.forEach(item => {
                 let isValid = true;
-                
-                // กรองวันที่เริ่มต้น: ถ้าใส่วันเริ่ม และวันนี้ยังไม่ถึง ให้ซ่อน
                 if (item.startDate) {
                     let sDate = new Date(item.startDate);
                     sDate.setHours(0,0,0,0);
                     if (today < sDate) isValid = false;
                 }
-                
-                // กรองวันที่สิ้นสุด: ถ้าใส่วันหมดอายุ และวันนี้เลยมาแล้ว ให้ซ่อน
                 if (item.endDate) {
                     let eDate = new Date(item.endDate);
                     eDate.setHours(0,0,0,0);
                     if (today > eDate) isValid = false;
                 }
 
-                // ถ้าระยะเวลาถูกต้อง ให้สร้างการ์ดแสดงผล
                 if(isValid) {
-                    // แอบเพิ่มลูกเล่น โชว์วันที่หมดอายุเป็นตัวสีแดงไว้เตือนความจำ CR ด้วยครับ
                     let expireText = item.endDate ? `<p style="font-size:11px; color:#d32f2f; margin-bottom:10px;"><i class="fas fa-clock"></i> หมดเขต: ${item.endDate}</p>` : '';
-                    
                     html += `
                     <div class="promo-card">
                         <span style="font-size:11px; background:#e8eaf6; padding:3px 8px; border-radius:12px; color:#3f51b5; font-weight:bold;">${item.category}</span>
@@ -138,18 +144,13 @@ function loadPromotions() {
                 }
             });
 
-            if(html === '') {
-                container.innerHTML = '<p style="text-align:center; color:#777; width:100%;">ไม่มีโปรโมชั่นในช่วงเวลานี้ครับ</p>';
-            } else {
-                container.innerHTML = html;
-            }
+            container.innerHTML = html === '' ? '<p style="text-align:center; color:#777; width:100%;">ไม่มีโปรโมชั่นในช่วงเวลานี้ครับ</p>' : html;
         } else {
             container.innerHTML = '<p style="text-align:center; color:#777; width:100%;">ยังไม่มีโปรโมชั่นในระบบครับ</p>';
         }
     }).catch(e => container.innerHTML = '<p style="color:red; text-align:center; width:100%;">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่</p>');
 }
 
-// 2. ดึงรายงานภาพรวม (ไม่แยกบุคคลแล้ว)
 function loadReports() {
     const container = document.getElementById('reports-container');
     container.innerHTML = '<div class="spinner-small"></div>';
@@ -159,7 +160,6 @@ function loadReports() {
     .then(data => {
         if(data.result === 'success' && data.data.length > 0) {
             let html = '';
-            // กลับด้าน Array เพื่อให้รายงานที่อัปโหลดล่าสุด (บรรทัดล่างสุดในชีต) โชว์ขึ้นมาก่อน
             const reversedData = data.data.reverse(); 
 
             reversedData.forEach(item => {
@@ -179,4 +179,83 @@ function loadReports() {
             container.innerHTML = `<p style="text-align:center; color:#777; width:100%;">ยังไม่มีรายงานในระบบครับ</p>`;
         }
     }).catch(e => container.innerHTML = '<p style="color:red; text-align:center; width:100%;">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่</p>');
+}
+
+// ---------------------------------------------------
+// 🚀 เฟส 3: สมองกล Dashboard (กราฟและเป้าหมาย)
+// ---------------------------------------------------
+function loadDashboard() {
+    const month = document.getElementById('dash_month').value;
+    const year = document.getElementById('dash_year').value;
+    
+    document.getElementById('dash_loading').style.display = 'block';
+    document.getElementById('dash_charts').style.display = 'none';
+
+    fetch(`${API_URL}?action=get_dashboard&month=${month}&year=${year}`)
+    .then(r => r.json())
+    .then(res => {
+        document.getElementById('dash_loading').style.display = 'none';
+        document.getElementById('dash_charts').style.display = 'block';
+
+        if (res.result === 'success') {
+            const d = res.data;
+            
+            // 1. อัปเดต Progress Bar
+            document.getElementById('dash_target').innerText = d.target;
+            document.getElementById('dash_current').innerText = d.current;
+            
+            let percent = 0;
+            if (d.target > 0) {
+                percent = Math.round((d.current / d.target) * 100);
+            }
+            // ป้องกันกราฟทะลุหลอด
+            let barWidth = percent > 100 ? 100 : percent; 
+            const progressBar = document.getElementById('dash_progress');
+            progressBar.style.width = barWidth + '%';
+            progressBar.innerText = percent + '%';
+            
+            // เปลี่ยนสีหลอดตามความสำเร็จ (เกิน 80% เขียว, ต่ำกว่า 50% ส้ม)
+            if(percent >= 100) progressBar.style.background = "linear-gradient(90deg, #1b5e20, #4caf50)";
+            else if(percent >= 80) progressBar.style.background = "linear-gradient(90deg, #4caf50, #81c784)";
+            else if(percent >= 50) progressBar.style.background = "linear-gradient(90deg, #ff9800, #ffb74d)";
+            else progressBar.style.background = "linear-gradient(90deg, #f44336, #e57373)";
+
+            // 2. วาดกราฟเปรียบเทียบพนักงาน (Bar Chart)
+            const ctxCr = document.getElementById('crChart').getContext('2d');
+            if (crChartInstance) crChartInstance.destroy(); // เคลียร์กราฟเก่า
+            crChartInstance = new Chart(ctxCr, {
+                type: 'bar',
+                data: {
+                    labels: ['กรรณิกา', 'เรืองศิริ'],
+                    datasets: [{
+                        label: 'ยอดรถเข้า (คัน)',
+                        data: [d.kannika, d.ruangsiri],
+                        backgroundColor: ['#2196f3', '#e91e63'], // ฟ้าและชมพู
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+
+            // 3. วาดกราฟสัดส่วนประเภทการนัดหมาย (Doughnut Chart)
+            const ctxType = document.getElementById('typeChart').getContext('2d');
+            if (typeChartInstance) typeChartInstance.destroy();
+            typeChartInstance = new Chart(ctxType, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ระบบตรีเพชร', 'โทรมาเอง', 'คนอื่นนัด/Walk-in'],
+                    datasets: [{
+                        data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral],
+                        backgroundColor: ['#4caf50', '#ff9800', '#9c27b0'], // เขียว, ส้ม, ม่วง
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } } }
+            });
+
+        }
+    })
+    .catch(e => {
+        document.getElementById('dash_loading').innerText = "โหลดข้อมูลล้มเหลว กรุณาลองใหม่";
+    });
 }
