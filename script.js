@@ -3,11 +3,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyz-B3bW7G5OgqCHJWXmIvD
 Chart.register(ChartDataLabels);
 let crChartInstance = null;
 let typeChartInstance = null;
-
-// ตัวแปรใหม่สำหรับกราฟใน Modal
 let kannikaChartInstance = null;
 let ruangsiriChartInstance = null;
-let currentDashboardData = null; // เก็บ Data ของเดือนนั้นไว้ เผื่อกดเปิด Modal
+let currentDashboardData = null; 
 
 document.addEventListener("DOMContentLoaded", () => {
     const today = new Date();
@@ -38,12 +36,12 @@ function switchTab(evt, tabId) {
 }
 
 function openAdminTab() {
-    const pin = prompt("🔒 กรุณาใส่รหัสผ่าน Admin (รหัสเริ่มต้น: 1234):");
+    const pin = prompt("🔒 กรุณาใส่รหัสผ่าน Administrator (รหัสเริ่มต้น: 1234):");
     if (pin === "1234") {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('tab-admin').classList.add('active');
-    } else if (pin !== null && pin !== "") alert("❌ รหัสผ่านไม่ถูกต้องครับ!");
+    } else if (pin !== null && pin !== "") alert("❌ รหัสผ่านไม่ถูกต้อง การเข้าถึงถูกปฏิเสธ");
 }
 
 function uploadCSV() {
@@ -52,10 +50,10 @@ function uploadCSV() {
     const adminMonth = document.getElementById('admin_month').value;
     const adminYear = document.getElementById('admin_year').value;
 
-    if (!file) return alert("⚠️ กรุณาเลือกไฟล์ .csv ก่อนครับ");
+    if (!file) return alert("⚠️ กรุณาแนบไฟล์นามสกุล .csv ก่อนทำรายการ");
 
     const btn = document.getElementById('upload-btn');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังแกะข้อมูล...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังประมวลผลข้อมูล...';
     btn.disabled = true;
 
     Papa.parse(file, {
@@ -67,9 +65,9 @@ function uploadCSV() {
             fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(r => r.json())
             .then(res => {
-                btn.innerHTML = '<i class="fas fa-rocket"></i> อัปโหลดเข้าฐานข้อมูล'; btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-database"></i> ปรับปรุงฐานข้อมูล'; btn.disabled = false;
                 if(res.result === 'success') { 
-                    alert("✅ อัปโหลด CSV สำเร็จ! ข้อมูลบันทึกเรียบร้อย"); 
+                    alert("✅ ปรับปรุงฐานข้อมูลสำเร็จ! ข้อมูลถูกเขียนทับในเดือนที่ระบุเรียบร้อยแล้ว"); 
                     fileInput.value = ""; 
                     document.getElementById('dash_month').value = adminMonth;
                     document.getElementById('dash_year').value = adminYear;
@@ -77,8 +75,8 @@ function uploadCSV() {
                 } 
                 else alert("❌ ข้อผิดพลาดเซิร์ฟเวอร์: " + res.message);
             }).catch(e => {
-                btn.innerHTML = '<i class="fas fa-rocket"></i> อัปโหลดเข้าฐานข้อมูล'; btn.disabled = false;
-                alert("❌ เกิดข้อผิดพลาดในการส่งข้อมูล");
+                btn.innerHTML = '<i class="fas fa-database"></i> ปรับปรุงฐานข้อมูล'; btn.disabled = false;
+                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
             });
         }
     });
@@ -94,10 +92,10 @@ function calculateTotal() {
 function saveRecord() {
     const crName = document.getElementById('cr_name').value;
     const recordDate = document.getElementById('record_date').value;
-    if (!recordDate) return alert("⚠️ กรุณาเลือกวันที่ก่อนบันทึกผลงานครับ");
+    if (!recordDate) return alert("⚠️ กรุณาระบุวันที่ก่อนทำรายการ");
     
     const tot = parseInt(document.getElementById('type_total').value) || 0;
-    if (tot === 0 && !confirm("วันนี้ยังไม่มียอดรถเข้าเลย ยืนยันที่จะบันทึกใช่หรือไม่?")) return;
+    if (tot === 0 && !confirm("ยอดรวมรถเข้าเป็น 0 คัน ยืนยันที่จะส่งข้อมูลเข้าระบบหรือไม่?")) return;
 
     localStorage.setItem('cr_hub_name', crName);
     const payload = { action: "save_record", date: recordDate, cr_name: crName, 
@@ -111,7 +109,7 @@ function saveRecord() {
     fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
     .then(r => r.json()).then(data => {
         overlay.style.display = "none"; btn.disabled = false;
-        if(data.result === 'success') { alert("✅ บันทึกสำเร็จ!"); document.getElementById('type_tripetch').value = 0; document.getElementById('type_inbound').value = 0; document.getElementById('type_referral').value = 0; calculateTotal(); }
+        if(data.result === 'success') { alert("✅ บันทึกข้อมูลเข้าสู่ระบบเรียบร้อยแล้ว"); document.getElementById('type_tripetch').value = 0; document.getElementById('type_inbound').value = 0; document.getElementById('type_referral').value = 0; calculateTotal(); }
     }).catch(e => { overlay.style.display = "none"; btn.disabled = false; alert("✅ ส่งข้อมูลสำเร็จ!"); });
 }
 
@@ -125,12 +123,12 @@ function loadPromotions() {
                 if (item.startDate) { let sDate = new Date(item.startDate); sDate.setHours(0,0,0,0); if (today < sDate) isValid = false; }
                 if (item.endDate) { let eDate = new Date(item.endDate); eDate.setHours(0,0,0,0); if (today > eDate) isValid = false; }
                 if(isValid) {
-                    let expireText = item.endDate ? `<p style="font-size:13px; color:#d32f2f; margin-bottom:15px;"><i class="fas fa-clock"></i> หมดเขต: ${item.endDate}</p>` : '';
-                    html += `<div class="promo-card"><span style="font-size:12px; background:#e3f2fd; padding:4px 10px; border-radius:15px; color:#1565c0; font-weight:bold;">${item.category}</span><h4 style="margin-top: 15px;">${item.title}</h4><p>${item.desc}</p>${expireText}<a href="${item.link}" target="_blank" class="btn-view"><i class="fas fa-external-link-alt"></i> เปิดดูไฟล์</a></div>`;
+                    let expireText = item.endDate ? `<p style="font-size:13px; color:#d32f2f; margin-bottom:15px;"><i class="fas fa-clock"></i> สิ้นสุดแคมเปญ: ${item.endDate}</p>` : '';
+                    html += `<div class="promo-card"><span style="font-size:12px; background:#e3f2fd; padding:4px 10px; border-radius:15px; color:#1565c0; font-weight:bold;">${item.category}</span><h4 style="margin-top: 15px;">${item.title}</h4><p>${item.desc}</p>${expireText}<a href="${item.link}" target="_blank" class="btn-view"><i class="fas fa-external-link-alt"></i> เปิดดูเอกสาร</a></div>`;
                 }
             });
-            container.innerHTML = html === '' ? '<p style="text-align:center; width:100%;">ไม่มีโปรโมชั่นในช่วงนี้</p>' : html;
-        } else container.innerHTML = '<p style="text-align:center; width:100%;">ยังไม่มีโปรโมชั่น</p>';
+            container.innerHTML = html === '' ? '<p style="text-align:center; width:100%;">ไม่มีแคมเปญในระยะเวลานี้</p>' : html;
+        } else container.innerHTML = '<p style="text-align:center; width:100%;">ไม่พบข้อมูลในระบบ</p>';
     });
 }
 
@@ -141,10 +139,10 @@ function loadReports() {
             let html = ''; data.data.reverse().forEach(item => {
                 const typeClass = item.type === 'รายเดือน' ? 'monthly' : '';
                 const icon = item.type === 'รายเดือน' ? 'fa-calendar-alt' : 'fa-calendar-week';
-                html += `<div class="report-item ${typeClass}"><div class="report-info"><h4><i class="fas ${icon}"></i> ${item.filename}</h4><p>รอบ: <b>${item.period}</b> | ชนิด: ${item.type}</p></div><a href="${item.link}" target="_blank" class="btn-view" style="width:auto;"><i class="fas fa-file-pdf"></i> เปิดดู</a></div>`;
+                html += `<div class="report-item ${typeClass}"><div class="report-info"><h4><i class="fas ${icon}"></i> ${item.filename}</h4><p>รอบการประเมิน: <b>${item.period}</b> | ชนิดรายงาน: ${item.type}</p></div><a href="${item.link}" target="_blank" class="btn-view" style="width:auto;"><i class="fas fa-file-pdf"></i> เปิดดูเอกสาร</a></div>`;
             });
             container.innerHTML = html;
-        } else container.innerHTML = `<p style="text-align:center; width:100%;">ยังไม่มีรายงาน</p>`;
+        } else container.innerHTML = `<p style="text-align:center; width:100%;">ไม่พบเอกสารรายงาน</p>`;
     });
 }
 
@@ -158,9 +156,8 @@ function loadDashboard() {
 
         if (res.result === 'success') {
             const d = res.data;
-            currentDashboardData = d; // เก็บไว้เผื่อกดเปิด Modal แยกรายบุคคล
+            currentDashboardData = d; 
 
-            // 1. Progress Bar
             document.getElementById('dash_target').innerText = d.target;
             document.getElementById('dash_current').innerText = d.current;
             let percent = d.target > 0 ? Math.round((d.current / d.target) * 100) : 0;
@@ -171,7 +168,6 @@ function loadDashboard() {
             else if(percent >= 50) pb.style.background = "linear-gradient(90deg, #1565c0, #4fc3f7)";
             else pb.style.background = "linear-gradient(90deg, #d32f2f, #e57373)";
 
-            // 2. กราฟแท่ง
             if (crChartInstance) crChartInstance.destroy();
             crChartInstance = new Chart(document.getElementById('crChart'), {
                 type: 'bar',
@@ -179,15 +175,13 @@ function loadDashboard() {
                 options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, plugins: { legend: { display: false }, datalabels: { color: '#0d47a1', font: { weight: 'bold', size: 16 }, anchor: 'end', align: 'top', offset: 4, formatter: v => v > 0 ? v : '' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
 
-            // 3. กราฟโดนัท (รวม)
             if (typeChartInstance) typeChartInstance.destroy();
             typeChartInstance = new Chart(document.getElementById('typeChart'), {
                 type: 'doughnut',
-                data: { labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] },
+                data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] },
                 options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 13 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 16 }, formatter: v => v > 0 ? v : '' } } }
             });
 
-            // 4. การ์ดสถานะการโทรตาม CSV
             if (d.csvData && d.csvData.length > 0) {
                 let csvHtml = '<div style="grid-column: 1 / -1;"><h3 style="color:#0d47a1; margin-top:20px; border-bottom:2px solid #bbdefb; padding-bottom:10px;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3></div>';
                 d.csvData.forEach(item => {
@@ -215,64 +209,44 @@ function loadDashboard() {
                 });
                 document.getElementById('dash_csv_tracking').innerHTML = csvHtml;
             } else {
-                document.getElementById('dash_csv_tracking').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:#777; padding: 40px; background: #fff; border: 1px dashed #ccc; border-radius: 10px;">⚠️ ผู้ดูแลระบบยังไม่ได้อัปโหลดข้อมูลการโทรของเดือนนี้ครับ</p>';
+                document.getElementById('dash_csv_tracking').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:#777; padding: 40px; background: #fff; border: 1px dashed #ccc; border-radius: 10px;">⚠️ ผู้ดูแลระบบยังไม่ได้อัปโหลดฐานข้อมูลการติดตามลูกค้าในเดือนนี้</p>';
             }
         }
-    })
-    .catch(e => {
-        document.getElementById('dash_loading').innerText = "โหลดข้อมูลล้มเหลว กรุณาลองใหม่";
-    });
+    }).catch(e => { document.getElementById('dash_loading').innerText = "โหลดข้อมูลล้มเหลว"; });
 }
 
 // ---------------------------------------------------
-// 🚀 ฟังก์ชันเปิด Modal ดูกราฟแยกรายบุคคล 
+// 🚀 แก้ไขฟังก์ชันเปิด Modal (หน่วงเวลาให้วาดกราฟติดชัวร์)
 // ---------------------------------------------------
 function openBreakdownModal() {
-    if (!currentDashboardData) return;
+    if (!currentDashboardData) return alert("⚠️ ข้อมูลยังไม่พร้อม กรุณารอสักครู่");
     const d = currentDashboardData;
+    
+    // 1. เปิดหน้าต่าง Modal ออกมาก่อน
     document.getElementById('breakdown-modal').style.display = 'flex';
 
-    // วาดกราฟของ กรรณิกา
-    if (kannikaChartInstance) kannikaChartInstance.destroy();
-    kannikaChartInstance = new Chart(document.getElementById('kannikaChart'), {
-        type: 'doughnut',
-        data: { 
-            labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], 
-            datasets: [{ 
-                data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], 
-                backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], 
-                borderWidth: 2 
-            }] 
-        },
-        options: { 
-            responsive: true, maintainAspectRatio: false, cutout: '55%', 
-            plugins: { 
-                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, 
-                datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } 
-            } 
-        }
-    });
+    // 2. ใช้ setTimeout หน่วงเวลา 100 มิลลิวินาที ให้หน้าต่างกางสุดก่อนวาดกราฟ
+    setTimeout(() => {
+        if (kannikaChartInstance) kannikaChartInstance.destroy();
+        kannikaChartInstance = new Chart(document.getElementById('kannikaChart'), {
+            type: 'doughnut',
+            data: { 
+                labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], 
+                datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] 
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } } }
+        });
 
-    // วาดกราฟของ เรืองศิริ
-    if (ruangsiriChartInstance) ruangsiriChartInstance.destroy();
-    ruangsiriChartInstance = new Chart(document.getElementById('ruangsiriChart'), {
-        type: 'doughnut',
-        data: { 
-            labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], 
-            datasets: [{ 
-                data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], 
-                backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], 
-                borderWidth: 2 
-            }] 
-        },
-        options: { 
-            responsive: true, maintainAspectRatio: false, cutout: '55%', 
-            plugins: { 
-                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, 
-                datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } 
-            } 
-        }
-    });
+        if (ruangsiriChartInstance) ruangsiriChartInstance.destroy();
+        ruangsiriChartInstance = new Chart(document.getElementById('ruangsiriChart'), {
+            type: 'doughnut',
+            data: { 
+                labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], 
+                datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] 
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } } }
+        });
+    }, 100);
 }
 
 function closeBreakdownModal() {
