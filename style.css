@@ -12,14 +12,20 @@ body {
 header { 
     background: linear-gradient(135deg, #d32f2f, #b71c1c); 
     color: white; 
-    padding: 18px 20px; 
-    text-align: center; 
+    padding: 15px 20px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.15); 
     position: sticky;
     top: 0;
     z-index: 100;
 }
-header h1 { font-size: 20px; margin: 0; font-weight: 600; letter-spacing: 0.5px;}
+header h1 { font-size: 20px; margin: 0; font-weight: 600; letter-spacing: 0.5px; flex: 1; text-align: center;}
+.admin-header-btn {
+    background: none; border: none; color: rgba(255,255,255,0.7); font-size: 20px; cursor: pointer; padding: 0; transition: 0.2s;
+}
+.admin-header-btn:hover { color: white; transform: scale(1.1);}
 
 /* 🌟 Tabs Navigation 🌟 */
 .tabs { 
@@ -34,8 +40,8 @@ header h1 { font-size: 20px; margin: 0; font-weight: 600; letter-spacing: 0.5px;
 
 .tab-btn { 
     flex: 1; 
-    min-width: 100px; 
-    padding: 15px 10px; 
+    min-width: 80px; 
+    padding: 15px 5px; 
     background: none; 
     border: none; 
     border-bottom: 3px solid transparent; 
