@@ -335,47 +335,70 @@ function showQuestion() {
     const q = currentQuestions[currentQuestionIndex];
     document.getElementById('quiz_step').innerText = `ข้อที่ ${currentQuestionIndex + 1} จาก ${currentQuestions.length}`;
     
-    // ซ่อนปุ่มถัดไปและกล่องอธิบายไว้ก่อน
+    // ซ่อนกล่องคำอธิบายรวม (ถ้ามี) และปุ่มข้อถัดไป
     document.getElementById('explanation_box').style.display = 'none';
     document.getElementById('next-q-btn').style.display = 'none';
     
-    let html = `
-    <p class="quiz-q-text">${currentQuestionIndex + 1}. ${q.q}</p>
-    <div class="quiz-options">
-        <div class="quiz-opt" id="opt-A" onclick="checkAnswer('A')"><span style="background:#eee; padding:5px 10px; border-radius:5px;">A</span> ${q.a}</div>
-        <div class="quiz-opt" id="opt-B" onclick="checkAnswer('B')"><span style="background:#eee; padding:5px 10px; border-radius:5px;">B</span> ${q.b}</div>
-        <div class="quiz-opt" id="opt-C" onclick="checkAnswer('C')"><span style="background:#eee; padding:5px 10px; border-radius:5px;">C</span> ${q.c}</div>
-        <div class="quiz-opt" id="opt-D" onclick="checkAnswer('D')"><span style="background:#eee; padding:5px 10px; border-radius:5px;">D</span> ${q.d}</div>
-    </div>`;
+    // แสดงคำถาม
+    document.getElementById('q_text').innerText = `${currentQuestionIndex + 1}. ${q.q}`;
     
-    document.getElementById('question_box').innerHTML = html;
+    // สร้างตัวเลือก A, B, C, D พร้อมซ่อนคำอธิบายของแต่ละตัวเลือกไว้
+    let optionsHtml = '';
+    const choices = [
+        { id: 'A', text: q.a, explain: q.expA },
+        { id: 'B', text: q.b, explain: q.expB },
+        { id: 'C', text: q.c, explain: q.expC },
+        { id: 'D', text: q.d, explain: q.expD }
+    ];
+
+    choices.forEach(choice => {
+        optionsHtml += `
+        <div class="quiz-opt-container" id="container-${choice.id}">
+            <div class="quiz-opt-header" onclick="checkAnswer('${choice.id}')">
+                <span style="background:#eee; padding:5px 10px; border-radius:5px; font-weight:bold; color:#333;">${choice.id}</span>
+                ${choice.text}
+            </div>
+            <div class="opt-explain" id="explain-${choice.id}">
+                ${choice.explain ? choice.explain : "ไม่มีคำอธิบายเพิ่มเติมสำหรับข้อนี้"}
+            </div>
+        </div>`;
+    });
+
+    document.getElementById('options_container').innerHTML = optionsHtml;
 }
 
 function checkAnswer(userAns) {
     const q = currentQuestions[currentQuestionIndex];
-    const opts = document.querySelectorAll('.quiz-opt');
+    const containers = document.querySelectorAll('.quiz-opt-container');
     
-    // ล็อกไม่ให้เปลี่ยนคำตอบ
-    opts.forEach(o => o.classList.add('locked')); 
+    // ล็อกทุกตัวเลือกไม่ให้คลิกซ้ำได้
+    containers.forEach(c => c.classList.add('locked')); 
     userAnswers[currentQuestionIndex] = userAns;
 
-    // ตรวจคำตอบและเปลี่ยนสี
+    // ตรวจถูกผิด
     if (userAns === q.correct) {
-        document.getElementById(`opt-${userAns}`).classList.add('correct');
+        document.getElementById(`container-${userAns}`).classList.add('correct');
         score++;
     } else {
-        document.getElementById(`opt-${userAns}`).classList.add('incorrect');
-        // แสดงข้อที่ถูกให้เห็นด้วยสีเขียว
-        if(document.getElementById(`opt-${q.correct}`)) {
-            document.getElementById(`opt-${q.correct}`).classList.add('correct');
+        document.getElementById(`container-${userAns}`).classList.add('incorrect');
+        if(document.getElementById(`container-${q.correct}`)) {
+            document.getElementById(`container-${q.correct}`).classList.add('correct');
         }
     }
 
-    // แสดงกล่องคำอธิบายเฉลย (Explanation)
-    document.getElementById('explanation_text').innerText = q.explain || "ไม่มีคำอธิบายเพิ่มเติมสำหรับข้อนี้";
-    document.getElementById('explanation_box').style.display = 'block';
+    // 💡 หัวใจสำคัญ: สั่งเปิดคำอธิบายของทุกตัวเลือกออกมาให้เห็น (Slide Down)
+    document.getElementById('explain-A').style.display = 'block';
+    document.getElementById('explain-B').style.display = 'block';
+    document.getElementById('explain-C').style.display = 'block';
+    document.getElementById('explain-D').style.display = 'block';
+
+    // ถ้ามีคำอธิบายรวม (Summary) ในคอลัมน์ L ให้แสดงด้วย
+    if(q.expSummary) {
+        document.getElementById('explanation_text').innerText = q.expSummary;
+        document.getElementById('explanation_box').style.display = 'block';
+    }
     
-    // แสดงปุ่มข้อถัดไป
+    // แสดงปุ่มไปต่อ
     document.getElementById('next-q-btn').style.display = 'block';
     if(currentQuestionIndex === currentQuestions.length - 1) {
         document.getElementById('next-q-btn').innerHTML = 'ส่งคำตอบประเมินผล <i class="fas fa-paper-plane"></i>';
