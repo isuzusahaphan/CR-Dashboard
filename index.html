@@ -15,7 +15,7 @@
     <nav class="tabs">
         <button class="tab-btn active" onclick="switchTab(event, 'tab-input')"><i class="fas fa-edit"></i> บันทึกผลงาน</button>
         <button class="tab-btn" onclick="switchTab(event, 'tab-dashboard')"><i class="fas fa-chart-line"></i> กระดานสรุป</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-reports')"><i class="fas fa-file-pdf"></i> รายงานส่วนตัว</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-reports')"><i class="fas fa-file-pdf"></i> รายงานภาพรวม</button>
         <button class="tab-btn" onclick="switchTab(event, 'tab-promo')"><i class="fas fa-gift"></i> คลังอาวุธลับ</button>
     </nav>
 
@@ -77,10 +77,10 @@
 
         <section id="tab-reports" class="tab-content">
             <div class="card">
-                <h2>📑 My Reports (PDF)</h2>
-                <div class="construction-box">
-                    <i class="fas fa-tools" style="font-size: 40px; color: #ff9800; margin-bottom: 15px;"></i>
-                    <p>ระบบดึงไฟล์รายงานส่วนตัว<br>กำลังก่อสร้างในเฟสที่ 2 ครับ 🚧</p>
+                <h2>📑 รายงานภาพรวม (PDF)</h2>
+                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">รายงานสรุปผลการทำงานร่วมกันของทีม</p>
+                <div id="reports-container" class="report-list">
+                    <p style="text-align:center; color:#777;">กำลังโหลดข้อมูล...</p>
                 </div>
             </div>
         </section>
@@ -88,9 +88,9 @@
         <section id="tab-promo" class="tab-content">
             <div class="card">
                 <h2>📚 คลังอาวุธลับ (Promo & Info)</h2>
-                <div class="construction-box">
-                    <i class="fas fa-tools" style="font-size: 40px; color: #ff9800; margin-bottom: 15px;"></i>
-                    <p>ระบบแกลเลอรีรูปภาพ/PDF<br>กำลังก่อสร้างในเฟสที่ 2 ครับ 🚧</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">อัปเดตโปรโมชั่นและคู่มือล่าสุด สำหรับส่งต่อให้ลูกค้า</p>
+                <div id="promo-container" class="promo-grid">
+                    <p style="text-align:center; color:#777; width: 100%;">กำลังโหลดข้อมูล...</p>
                 </div>
             </div>
         </section>
