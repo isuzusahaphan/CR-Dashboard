@@ -306,7 +306,8 @@ function prepareQuiz() {
     localStorage.setItem('cr_hub_name', name);
     document.getElementById('loading-overlay').style.display = 'flex';
     
-    fetch(`${API_URL}?action=get_quiz_questions&topic=${encodeURIComponent(topic)}`)
+    // อัปเกรด: ตัดช่องว่างตอนส่งข้อมูลไปหา API
+    fetch(`${API_URL}?action=get_quiz_questions&topic=${encodeURIComponent(topic.trim())}`)
     .then(r => r.json())
     .then(res => {
         document.getElementById('loading-overlay').style.display = 'none';
@@ -420,7 +421,7 @@ function finishQuiz() {
     const payload = {
         action: 'save_quiz_score',
         cr_name: document.getElementById('quiz_user_name').value,
-        quiz_title: document.getElementById('current_quiz_title').innerText,
+        quiz_title: document.getElementById('current_quiz_title').innerText.trim(), // อัปเกรด: ตัดช่องว่าง
         score: score,
         full_score: currentQuestions.length
     };
