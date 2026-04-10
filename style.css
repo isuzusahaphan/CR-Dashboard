@@ -22,8 +22,8 @@ header {
 }
 .header-left { display: flex; align-items: center; flex: 1;}
 .header-logo { 
-    height: 120px; 
-    max-width: 400px; 
+    height: 70px; 
+    max-width: 250px; 
     object-fit: contain;
 }
 header h1 { 
@@ -118,6 +118,12 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .progress-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 16px; color: #333; }
 .progress-bar-bg { width: 100%; background-color: #e0e0e0; border-radius: 12px; height: 28px; overflow: hidden; position: relative;}
 .progress-bar-fill { background: linear-gradient(90deg, #2e7d32, #4caf50); height: 100%; width: 0%; transition: width 1.5s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
+
+/* 🌟 Report Filters (ดีไซน์ใหม่) 🌟 */
+.report-filters { display: flex; gap: 15px; flex-wrap: wrap; background: #f0f2f5; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0;}
+.filter-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px;}
+.filter-group label { font-size: 13px; font-weight: bold; color: #555;}
+.filter-group select { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; background: #fff;}
 
 /* 🌟 Tooltips 🌟 */
 [data-tooltip] { position: relative; cursor: help; }
