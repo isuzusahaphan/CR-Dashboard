@@ -197,9 +197,11 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 /* 🔴 เมื่อตอบผิด */
 .quiz-opt-container.incorrect { border-color: #e53935; }
 .quiz-opt-container.incorrect .quiz-opt-header { background: #ffebee; color: #b71c1c; }
+
 /* 🟢 เมื่อตอบถูก (หรือเฉลยข้อที่ถูก) */
 .quiz-opt-container.correct { border-color: #43a047; }
 .quiz-opt-container.correct .quiz-opt-header { background: #e8f5e9; color: #1b5e20; }
+
 /* 🔒 ล็อกไม่ให้คลิกต่อ */
 .quiz-opt-container.locked { pointer-events: none; }
 .quiz-opt-container.locked:not(.correct):not(.incorrect) { opacity: 0.6; } /* หรี่ข้อที่ไม่ได้เลือกและผิด */
@@ -216,6 +218,7 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .explanation-card { 
     background: #e3f2fd; border-left: 5px solid #1565c0; padding: 20px; border-radius: 8px; margin-top: 25px;
     animation: slideUp 0.4s ease;
+    display: none; /* เริ่มต้นซ่อนไว้ */
 }
 .explain-header { font-weight: bold; color: #0d47a1; margin-bottom: 8px; font-size: 15px; }
 .explain-body { color: #333; line-height: 1.5; font-size: 15px; }
