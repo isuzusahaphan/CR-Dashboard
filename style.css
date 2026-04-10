@@ -175,37 +175,61 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .report-info h4 { margin: 0 0 8px 0; font-size: 16px; color: #333;}
 .report-info p { margin: 0; font-size: 13px; color: #777;}
 
-/* 🎓 Quiz & Training UI 🎓 */
+/* 🎓 Quiz & Training UI (อัปเกรดใหม่ NotebookLM Style) 🎓 */
 .quiz-card { background: #fff; padding: 10px 0; }
 .quiz-q-text { font-size: 19px; font-weight: bold; color: #333; margin-bottom: 25px; line-height: 1.6; }
-.quiz-options { display: grid; gap: 12px; }
-.quiz-opt { 
-    background: #fff; border: 2px solid #cfd8dc; padding: 18px 20px; border-radius: 8px; 
-    cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 15px; color: #555;
+.quiz-options-wrapper { display: flex; flex-direction: column; gap: 15px; }
+
+/* โครงสร้างตัวเลือกแต่ละข้อ */
+.quiz-opt-container {
+    background: #fff; border: 2px solid #cfd8dc; border-radius: 8px; 
+    transition: 0.2s; overflow: hidden;
 }
-.quiz-opt:hover { border-color: #90caf9; background: #f0f8ff; color: #1565c0; }
+.quiz-opt-container:hover { border-color: #90caf9; }
+
+/* ส่วนคลิกเลือก A B C D */
+.quiz-opt-header { 
+    padding: 18px 20px; cursor: pointer; display: flex; align-items: center; gap: 15px; 
+    font-weight: 600; font-size: 15px; color: #555; background: #fff; transition: 0.2s;
+}
+.quiz-opt-header:hover { background: #f0f8ff; color: #1565c0; }
 
 /* 🔴 เมื่อตอบผิด */
-.quiz-opt.incorrect { background: #ffebee; border-color: #e53935; color: #b71c1c; }
-/* 🟢 เมื่อตอบถูก */
-.quiz-opt.correct { background: #e8f5e9; border-color: #43a047; color: #1b5e20; }
+.quiz-opt-container.incorrect { border-color: #e53935; }
+.quiz-opt-container.incorrect .quiz-opt-header { background: #ffebee; color: #b71c1c; }
+/* 🟢 เมื่อตอบถูก (หรือเฉลยข้อที่ถูก) */
+.quiz-opt-container.correct { border-color: #43a047; }
+.quiz-opt-container.correct .quiz-opt-header { background: #e8f5e9; color: #1b5e20; }
 /* 🔒 ล็อกไม่ให้คลิกต่อ */
-.quiz-opt.locked { pointer-events: none; opacity: 0.8; }
+.quiz-opt-container.locked { pointer-events: none; }
+.quiz-opt-container.locked:not(.correct):not(.incorrect) { opacity: 0.6; } /* หรี่ข้อที่ไม่ได้เลือกและผิด */
 
-/* 💡 Explanation Card (NotebookLM Style) */
+/* 💡 ส่วนกางคำอธิบายของแต่ละข้อ */
+.opt-explain {
+    background: #fff9c4; border-top: 1px dashed #fbc02d; padding: 15px 20px;
+    font-size: 14px; color: #5d4037; line-height: 1.6;
+    display: none; /* เริ่มต้นซ่อนไว้ */
+    animation: slideDown 0.3s ease;
+}
+
+/* 💡 คำอธิบายรวม (ถ้ามี) */
 .explanation-card { 
-    background: #fff9c4; border-left: 5px solid #fbc02d; padding: 20px; border-radius: 8px; margin-top: 25px;
+    background: #e3f2fd; border-left: 5px solid #1565c0; padding: 20px; border-radius: 8px; margin-top: 25px;
     animation: slideUp 0.4s ease;
 }
-.explain-header { font-weight: bold; color: #f57f17; margin-bottom: 8px; font-size: 15px; }
-.explain-body { color: #5d4037; line-height: 1.5; font-size: 15px; }
+.explain-header { font-weight: bold; color: #0d47a1; margin-bottom: 8px; font-size: 15px; }
+.explain-body { color: #333; line-height: 1.5; font-size: 15px; }
 
+/* Animations */
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* กล่องประวัติ */
 .history-item { 
     display: flex; justify-content: space-between; align-items: center; 
-    background: #fff; padding: 15px 20px; border-radius: 8px; border-left: 5px solid #4caf50; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #eee; border-left: 5px solid #4caf50;
+    background: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 12px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #eee; border-left: 5px solid #4caf50;
 }
-
-@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* 🌟 Modals 🌟 */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;}
