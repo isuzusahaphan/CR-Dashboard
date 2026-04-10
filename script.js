@@ -30,15 +30,14 @@ function switchTab(evt, tabId) {
     if (tabId === 'tab-dashboard') loadDashboard();
 }
 
-// 🔒 เข้าสู่โหมด Admin เพื่ออัปโหลด CSV
+// 🔒 เข้าสู่โหมด Admin (เรียกผ่านไอคอนขวาบน)
 function openAdminTab() {
     const pin = prompt("🔒 กรุณาใส่รหัสผ่าน Admin เพื่อเข้าสู่ระบบจัดการ (รหัสเริ่มต้น: 1234):");
     if (pin === "1234") {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('tab-admin').classList.add('active');
-        document.getElementById('admin-tab-btn').classList.add('active');
-    } else if (pin !== null) {
+    } else if (pin !== null && pin !== "") {
         alert("❌ รหัสผ่านไม่ถูกต้องครับ!");
     }
 }
@@ -55,9 +54,8 @@ function uploadCSV() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังแกะข้อมูล...';
     btn.disabled = true;
 
-    // สั่งอ่านไฟล์ CSV
     Papa.parse(file, {
-        header: true, // ให้อ่านบรรทัดแรกเป็นหัวข้อคอลัมน์เลย
+        header: true,
         skipEmptyLines: true,
         complete: function(results) {
             const data = results.data;
