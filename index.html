@@ -16,20 +16,67 @@
         <div style="width: 24px;"></div> 
         <h1>🚗 CR Command Center</h1>
         <button class="admin-header-btn" onclick="openAdminTab()" title="สำหรับผู้ดูแลระบบ">
-            <i class="fas fa-user-cog"></i>
+            <i class="fas fa-user-shield"></i>
         </button>
     </header>
 
     <nav class="tabs">
-        <button class="tab-btn active" onclick="switchTab(event, 'tab-input')"><i class="fas fa-edit"></i> บันทึกงาน</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-dashboard')"><i class="fas fa-chart-line"></i> Dashboard</button>
+        <button class="tab-btn active" onclick="switchTab(event, 'tab-dashboard')"><i class="fas fa-chart-line"></i> Dashboard</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-input')"><i class="fas fa-edit"></i> บันทึกงาน</button>
         <button class="tab-btn" onclick="switchTab(event, 'tab-reports')"><i class="fas fa-file-pdf"></i> รายงาน</button>
         <button class="tab-btn" onclick="switchTab(event, 'tab-promo')"><i class="fas fa-gift"></i> โปรโมชั่น</button>
     </nav>
 
     <main>
-        <section id="tab-input" class="tab-content active">
+        <section id="tab-dashboard" class="tab-content active">
             <div class="card">
+                <div class="dash-header">
+                    <h2>📊 Performance Dashboard</h2>
+                    <div class="dash-filters">
+                        <select id="dash_month" onchange="loadDashboard()">
+                            <option value="01">มกราคม</option><option value="02">กุมภาพันธ์</option><option value="03">มีนาคม</option>
+                            <option value="04">เมษายน</option><option value="05">พฤษภาคม</option><option value="06">มิถุนายน</option>
+                            <option value="07">กรกฎาคม</option><option value="08">สิงหาคม</option><option value="09">กันยายน</option>
+                            <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+                        </select>
+                        <select id="dash_year" onchange="loadDashboard()">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-labels">
+                        <span>เป้าหมายประจำเดือน: <span id="dash_target" style="color:#d32f2f;">0</span> คัน</span>
+                        <span>รถเข้าจริง: <span id="dash_current" style="color:#2e7d32;">0</span> คัน</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="dash_progress">0%</div>
+                    </div>
+                </div>
+
+                <div id="dash_loading" style="text-align: center; padding: 40px; color: #777;"><div class="spinner-small" style="border-top-color:#2e7d32;"></div> กำลังโหลดข้อมูล...</div>
+                
+                <div id="dash_charts" style="display: none;">
+                    <div class="dash-charts-grid">
+                        <div class="chart-box">
+                            <h4>ยอดรถเข้าแยกตามพนักงาน (คัน)</h4>
+                            <div class="chart-container"><canvas id="crChart"></canvas></div>
+                        </div>
+                        <div class="chart-box">
+                            <h4>สัดส่วนช่องทางการนัดหมาย</h4>
+                            <div class="chart-container"><canvas id="typeChart"></canvas></div>
+                        </div>
+                    </div>
+                    
+                    <div id="dash_csv_tracking"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-input" class="tab-content">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
                 <h2>📝 บันทึกรถเข้ารับบริการ (Daily Log)</h2>
                 <div class="form-group">
                     <label>👩‍💼 ชื่อผู้รับผิดชอบ (CR)</label>
@@ -69,58 +116,10 @@
             </div>
         </section>
 
-        <section id="tab-dashboard" class="tab-content">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                    <h2 style="margin: 0; border: none; padding: 0;">📊 Dashboard</h2>
-                    <div style="display: flex; gap: 5px;">
-                        <select id="dash_month" onchange="loadDashboard()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-                            <option value="01">ม.ค.</option><option value="02">ก.พ.</option><option value="03">มี.ค.</option>
-                            <option value="04">เม.ย.</option><option value="05">พ.ค.</option><option value="06">มิ.ย.</option>
-                            <option value="07">ก.ค.</option><option value="08">ส.ค.</option><option value="09">ก.ย.</option>
-                            <option value="10">ต.ค.</option><option value="11">พ.ย.</option><option value="12">ธ.ค.</option>
-                        </select>
-                        <select id="dash_year" onchange="loadDashboard()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-                            <option value="2026">2026</option>
-                            <option value="2027">2027</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="progress-container">
-                    <div class="progress-labels">
-                        <span>เป้าหมาย: <span id="dash_target" style="color:#d32f2f;">0</span> คัน</span>
-                        <span>ทำได้แล้ว: <span id="dash_current" style="color:#2e7d32;">0</span> คัน</span>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" id="dash_progress">0%</div>
-                    </div>
-                </div>
-
-                <div id="dash_loading" style="text-align: center; padding: 20px; color: #777; display: none;">กำลังคำนวณข้อมูลกราฟ...</div>
-                
-                <div id="dash_charts" style="display: block;">
-                    <h4 style="color:#555; text-align:center; margin-bottom:10px; font-size:14px;">ยอดรถเข้าแยกตามพนักงาน (คัน)</h4>
-                    <div class="chart-container">
-                        <canvas id="crChart"></canvas>
-                    </div>
-                    
-                    <hr style="border: 0.5px dashed #eee; margin: 25px 0;">
-                    
-                    <h4 style="color:#555; text-align:center; margin-bottom:10px; font-size:14px;">สัดส่วนประเภทการนัดหมาย</h4>
-                    <div class="chart-container" style="height: 220px;">
-                        <canvas id="typeChart"></canvas>
-                    </div>
-                    
-                    <div id="dash_csv_tracking"></div>
-                </div>
-            </div>
-        </section>
-
         <section id="tab-reports" class="tab-content">
             <div class="card">
                 <h2>📑 รายงานภาพรวม (PDF)</h2>
-                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">รายงานสรุปผลการทำงานร่วมกันของทีม</p>
+                <p style="font-size: 14px; color: #666; margin-bottom: 20px;">สรุปผลการทำงานร่วมกันของทีมประจำสัปดาห์/เดือน</p>
                 <div id="reports-container" class="report-list">
                     <p style="text-align:center; color:#777;">กำลังโหลดข้อมูล...</p>
                 </div>
@@ -129,7 +128,8 @@
 
         <section id="tab-promo" class="tab-content">
             <div class="card">
-                <h2>📚 คลังอาวุธลับ (Promo)</h2>
+                <h2>📚 คลังอาวุธลับ (Promo & Info)</h2>
+                <p style="font-size: 14px; color: #666; margin-bottom: 20px;">โปรโมชั่นและคู่มือล่าสุด สำหรับนำเสนอให้ลูกค้า</p>
                 <div id="promo-container" class="promo-grid">
                     <p style="text-align:center; color:#777; width: 100%;">กำลังโหลดข้อมูล...</p>
                 </div>
@@ -137,16 +137,16 @@
         </section>
 
         <section id="tab-admin" class="tab-content">
-            <div class="card" style="border-top: 5px solid #607d8b;">
-                <h2 style="color: #455a64; border-bottom-color: #cfd8dc;">⚙️ ผู้ดูแลระบบ (Admin)</h2>
-                <p style="font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5;">อัปโหลดไฟล์ <b>data.csv</b> ที่ดาวน์โหลดจากระบบตรีเพชร เพื่ออัปเดตสถานะการโทรตามลูกค้าให้ทีม CR ได้เห็นแบบ Real-time</p>
+            <div class="card" style="border-top: 5px solid #2e7d32; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #1b5e20; border-bottom-color: #c8e6c9;">⚙️ ผู้ดูแลระบบ (Admin)</h2>
+                <p style="font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.5;">อัปโหลดไฟล์ <b>data.csv</b> ที่ดาวน์โหลดจากระบบตรีเพชร เพื่ออัปเดตสถานะการโทรตามลูกค้าบน Dashboard</p>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-file-csv" style="color:#2196f3;"></i> เลือกไฟล์ CSV ข้อมูลปัจจุบัน</label>
+                    <label><i class="fas fa-file-csv" style="color:#2e7d32;"></i> เลือกไฟล์ CSV ข้อมูลปัจจุบัน</label>
                     <input type="file" id="csv_file" accept=".csv" style="padding: 10px; font-size: 14px; background: #fff;">
                 </div>
                 
-                <button id="upload-btn" class="btn-submit" onclick="uploadCSV()" style="background: linear-gradient(135deg, #607d8b, #455a64);">
+                <button id="upload-btn" class="btn-submit" onclick="uploadCSV()" style="background: linear-gradient(135deg, #388e3c, #1b5e20);">
                     <i class="fas fa-rocket"></i> อัปโหลดฐานข้อมูล
                 </button>
             </div>
@@ -156,7 +156,7 @@
 
     <div id="loading-overlay" class="overlay" style="display: none;">
         <div class="spinner"></div>
-        <p style="color: white; font-weight: bold; margin-top: 15px; font-size: 16px;">กำลังส่งข้อมูลเข้าศูนย์บัญชาการ...</p>
+        <p style="color: white; font-weight: bold; margin-top: 15px; font-size: 16px;">กำลังเชื่อมต่อศูนย์บัญชาการ...</p>
     </div>
 
     <script src="script.js"></script>
