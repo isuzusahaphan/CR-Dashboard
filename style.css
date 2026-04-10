@@ -28,9 +28,9 @@ header h1 { font-size: 20px; margin: 0; font-weight: 600; letter-spacing: 0.5px;
     overflow-x: auto; 
     border-bottom: 1px solid #ddd; 
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
 }
-.tabs::-webkit-scrollbar { display: none; } /* Chrome, Safari */
+.tabs::-webkit-scrollbar { display: none; }
 
 .tab-btn { 
     flex: 1; 
@@ -93,8 +93,6 @@ main { padding: 20px 15px; max-width: 600px; margin: 0 auto; }
     outline: none; 
     box-shadow: 0 0 0 4px rgba(211,47,47,0.1); 
 }
-
-/* ใส่สีเฉพาะช่องกรอกตัวเลขให้ดูเด่นขึ้น */
 .input-number-group input { font-size: 20px; font-weight: bold; text-align: center; color: #1565c0;}
 
 /* 🌟 Total Box 🌟 */
@@ -144,11 +142,29 @@ main { padding: 20px 15px; max-width: 600px; margin: 0 auto; }
 .btn-submit:active { transform: translateY(0); }
 .btn-submit:disabled { background: #9e9e9e; box-shadow: none; cursor: not-allowed; transform: none;}
 
-/* 🌟 Utilities 🌟 */
+/* 🌟 Promo & Reports UI (เฟส 2) 🌟 */
+.promo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+.promo-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; transition: 0.2s;}
+.promo-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-color: #d32f2f;}
+.promo-card h4 { color: #d32f2f; margin-bottom: 8px; font-size: 15px;}
+.promo-card p { font-size: 12.5px; color: #666; margin-bottom: 12px; line-height: 1.4;}
+.btn-view { background: #1565c0; color: white; padding: 8px 12px; border: none; border-radius: 5px; font-size: 13px; cursor: pointer; width: 100%; text-decoration: none; display: inline-block; font-weight: bold;}
+.btn-view:hover { background: #0d47a1; }
+
+.report-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px;}
+.report-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border: 1px solid #e0e0e0; border-left: 4px solid #4caf50; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+.report-item.monthly { border-left-color: #9c27b0; }
+.report-info h4 { margin: 0 0 5px 0; font-size: 14.5px; color: #333;}
+.report-info p { margin: 0; font-size: 12px; color: #777;}
+
+@media (max-width: 600px) {
+    .promo-grid { grid-template-columns: 1fr; }
+}
+
+/* 🌟 Utilities & Spinner 🌟 */
 .construction-box { text-align: center; padding: 40px 20px; background: #f9f9f9; border-radius: 8px; border: 2px dashed #ddd;}
 .construction-box p { color: #777; line-height: 1.6; }
 
-/* 🌟 Overlay & Spinner 🌟 */
 .overlay { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: rgba(0,0,0,0.7); 
@@ -163,4 +179,5 @@ main { padding: 20px 15px; max-width: 600px; margin: 0 auto; }
     border-radius: 50%; 
     animation: spin 1s linear infinite; 
 }
+.spinner-small { width: 30px; height: 30px; border-width: 4px; border-top-color: #d32f2f; animation: spin 1s linear infinite; margin: 0 auto;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
