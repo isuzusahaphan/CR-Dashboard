@@ -4,6 +4,11 @@ Chart.register(ChartDataLabels);
 let crChartInstance = null;
 let typeChartInstance = null;
 
+// ตัวแปรใหม่สำหรับกราฟใน Modal
+let kannikaChartInstance = null;
+let ruangsiriChartInstance = null;
+let currentDashboardData = null; // เก็บ Data ของเดือนนั้นไว้ เผื่อกดเปิด Modal
+
 document.addEventListener("DOMContentLoaded", () => {
     const today = new Date();
     document.getElementById('record_date').value = today.toLocaleDateString('en-CA');
@@ -12,8 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let yyyy = String(today.getFullYear());
     if(document.getElementById('dash_month').querySelector(`option[value="${mm}"]`)) document.getElementById('dash_month').value = mm;
     if(document.getElementById('dash_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('dash_year').value = yyyy;
-    
-    // ตั้งค่า dropdown admin ให้ตรงกับเดือนปัจจุบันด้วย
     if(document.getElementById('admin_month').querySelector(`option[value="${mm}"]`)) document.getElementById('admin_month').value = mm;
     if(document.getElementById('admin_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('admin_year').value = yyyy;
 
@@ -60,20 +63,14 @@ function uploadCSV() {
         skipEmptyLines: true,
         transformHeader: function(header) { return header.trim().replace(/^\uFEFF/, ''); },
         complete: function(results) {
-            const payload = { 
-                action: "upload_csv", 
-                month: adminMonth,
-                year: adminYear,
-                csvData: results.data 
-            };
+            const payload = { action: "upload_csv", month: adminMonth, year: adminYear, csvData: results.data };
             fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(r => r.json())
             .then(res => {
                 btn.innerHTML = '<i class="fas fa-rocket"></i> อัปโหลดเข้าฐานข้อมูล'; btn.disabled = false;
                 if(res.result === 'success') { 
-                    alert("✅ อัปโหลด CSV สำเร็จ! ข้อมูลถูกบันทึกในเดือนที่คุณเลือกเรียบร้อย"); 
+                    alert("✅ อัปโหลด CSV สำเร็จ! ข้อมูลบันทึกเรียบร้อย"); 
                     fileInput.value = ""; 
-                    // สลับไปหน้า Dashboard แล้วโหลดเดือนที่เพิ่งอัปโหลดโชว์ให้ดู
                     document.getElementById('dash_month').value = adminMonth;
                     document.getElementById('dash_year').value = adminYear;
                     switchTab({currentTarget: document.querySelector('.tab-btn')}, 'tab-dashboard');
@@ -161,6 +158,9 @@ function loadDashboard() {
 
         if (res.result === 'success') {
             const d = res.data;
+            currentDashboardData = d; // เก็บไว้เผื่อกดเปิด Modal แยกรายบุคคล
+
+            // 1. Progress Bar
             document.getElementById('dash_target').innerText = d.target;
             document.getElementById('dash_current').innerText = d.current;
             let percent = d.target > 0 ? Math.round((d.current / d.target) * 100) : 0;
@@ -168,95 +168,48 @@ function loadDashboard() {
             pb.style.width = (percent > 100 ? 100 : percent) + '%'; pb.innerText = percent + '%';
             if(percent >= 100) pb.style.background = "linear-gradient(90deg, #1b5e20, #388e3c)";
             else if(percent >= 80) pb.style.background = "linear-gradient(90deg, #388e3c, #81c784)";
-            else if(percent >= 50) pb.style.background = "linear-gradient(90deg, #1565c0, #4fc3f7)"; // ปรับเป็นโทนฟ้า
+            else if(percent >= 50) pb.style.background = "linear-gradient(90deg, #1565c0, #4fc3f7)";
             else pb.style.background = "linear-gradient(90deg, #d32f2f, #e57373)";
 
-            // 1. กราฟแท่ง พนักงาน (ธีม เขียว-น้ำเงิน + ฝังตัวเลขด้านบน)
+            // 2. กราฟแท่ง
             if (crChartInstance) crChartInstance.destroy();
             crChartInstance = new Chart(document.getElementById('crChart'), {
                 type: 'bar',
-                data: { 
-                    labels: ['กรรณิกา', 'เรืองศิริ'], 
-                    datasets: [{ 
-                        data: [d.kannika, d.ruangsiri], 
-                        backgroundColor: ['#2e7d32', '#1565c0'], // เขียวเข้ม, น้ำเงินเข้ม
-                        borderRadius: 6 
-                    }] 
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    layout: { padding: { top: 25 } }, // เว้นที่ด้านบนให้ตัวเลขไม่โดนตัด
-                    plugins: { 
-                        legend: { display: false }, 
-                        datalabels: { 
-                            color: '#0d47a1', 
-                            font: { weight: 'bold', size: 16 }, 
-                            anchor: 'end', 
-                            align: 'top', // วางไว้เหนือแท่งกราฟ
-                            offset: 4,
-                            formatter: v => v > 0 ? v : '' 
-                        } 
-                    }, 
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } 
-                }
+                data: { labels: ['กรรณิกา', 'เรืองศิริ'], datasets: [{ data: [d.kannika, d.ruangsiri], backgroundColor: ['#2e7d32', '#1565c0'], borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, plugins: { legend: { display: false }, datalabels: { color: '#0d47a1', font: { weight: 'bold', size: 16 }, anchor: 'end', align: 'top', offset: 4, formatter: v => v > 0 ? v : '' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
 
-            // 2. กราฟโดนัท (ธีม เขียว-น้ำเงิน-ฟ้า + ฝังตัวเลข)
+            // 3. กราฟโดนัท (รวม)
             if (typeChartInstance) typeChartInstance.destroy();
             typeChartInstance = new Chart(document.getElementById('typeChart'), {
                 type: 'doughnut',
-                data: { 
-                    labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], 
-                    datasets: [{ 
-                        data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], 
-                        backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], 
-                        borderWidth: 2 
-                    }] 
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, cutout: '55%', 
-                    plugins: { 
-                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 13 } } }, 
-                        datalabels: { 
-                            color: '#fff', 
-                            font: { weight: 'bold', size: 16 }, 
-                            formatter: v => v > 0 ? v : '' 
-                        } 
-                    } 
-                }
+                data: { labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], borderWidth: 2 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 13 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 16 }, formatter: v => v > 0 ? v : '' } } }
             });
 
-            // 3. หลอดสถานะการโทรจาก CSV
+            // 4. การ์ดสถานะการโทรตาม CSV
             if (d.csvData && d.csvData.length > 0) {
                 let csvHtml = '<div style="grid-column: 1 / -1;"><h3 style="color:#0d47a1; margin-top:20px; border-bottom:2px solid #bbdefb; padding-bottom:10px;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3></div>';
-                
                 d.csvData.forEach(item => {
                     const needToCall = item.tracked + item.untracked; 
                     let actualPercent = needToCall === 0 ? 100 : Math.round((item.tracked / needToCall) * 100);
-
                     csvHtml += `
                     <div class="csv-card">
                         <div class="csv-title">${item.group}</div>
-                        
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
-                            <span style="color:#555;">ความคืบหน้า</span>
-                            <span style="color:#1565c0; font-weight:bold;">${actualPercent}%</span>
+                            <span style="color:#555;">ความคืบหน้าการโทร</span><span style="color:#1565c0; font-weight:bold;">${actualPercent}%</span>
                         </div>
                         <div style="width:100%; background:#e0e0e0; height:12px; border-radius:6px; overflow:hidden; margin-bottom:15px;">
                             <div style="width:${actualPercent}%; background:linear-gradient(90deg, #1976d2, #4fc3f7); height:100%; transition: width 1s;"></div>
                         </div>
-                        
                         <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:5px;">
-                            <span>🎯 เป้าหมายกลุ่ม:</span>
-                            <b>${item.target} คัน</b>
+                            <span>🎯 เป้าหมายกลุ่ม:</span><b>${item.target} คัน</b>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:5px;">
-                            <span>✅ เข้าก่อนติดตาม:</span>
-                            <b style="color:#2e7d32;">${item.preService} คัน</b>
+                            <span>✅ เข้าก่อนติดตาม:</span><b style="color:#2e7d32;">${item.preService} คัน</b>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#f9f9f9; padding:8px; border-radius:6px;">
-                            <span>📞 สถานะการโทร:</span>
-                            <span>โทรแล้ว <b style="color:#1565c0;">${item.tracked}</b> | ค้าง <b style="color:#d32f2f;">${item.untracked}</b></span>
+                            <span>📞 สถานะการโทร:</span><span>โทรแล้ว <b style="color:#1565c0;">${item.tracked}</b> | ค้าง <b style="color:#d32f2f;">${item.untracked}</b></span>
                         </div>
                     </div>`;
                 });
@@ -269,4 +222,59 @@ function loadDashboard() {
     .catch(e => {
         document.getElementById('dash_loading').innerText = "โหลดข้อมูลล้มเหลว กรุณาลองใหม่";
     });
+}
+
+// ---------------------------------------------------
+// 🚀 ฟังก์ชันเปิด Modal ดูกราฟแยกรายบุคคล 
+// ---------------------------------------------------
+function openBreakdownModal() {
+    if (!currentDashboardData) return;
+    const d = currentDashboardData;
+    document.getElementById('breakdown-modal').style.display = 'flex';
+
+    // วาดกราฟของ กรรณิกา
+    if (kannikaChartInstance) kannikaChartInstance.destroy();
+    kannikaChartInstance = new Chart(document.getElementById('kannikaChart'), {
+        type: 'doughnut',
+        data: { 
+            labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], 
+            datasets: [{ 
+                data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], 
+                backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], 
+                borderWidth: 2 
+            }] 
+        },
+        options: { 
+            responsive: true, maintainAspectRatio: false, cutout: '55%', 
+            plugins: { 
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, 
+                datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } 
+            } 
+        }
+    });
+
+    // วาดกราฟของ เรืองศิริ
+    if (ruangsiriChartInstance) ruangsiriChartInstance.destroy();
+    ruangsiriChartInstance = new Chart(document.getElementById('ruangsiriChart'), {
+        type: 'doughnut',
+        data: { 
+            labels: ['ระบบตรีเพชร', 'โทรนัดเอง', 'คนอื่นนัด/Walk-in'], 
+            datasets: [{ 
+                data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], 
+                backgroundColor: ['#2e7d32', '#1565c0', '#0288d1'], 
+                borderWidth: 2 
+            }] 
+        },
+        options: { 
+            responsive: true, maintainAspectRatio: false, cutout: '55%', 
+            plugins: { 
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, 
+                datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } 
+            } 
+        }
+    });
+}
+
+function closeBreakdownModal() {
+    document.getElementById('breakdown-modal').style.display = 'none';
 }
