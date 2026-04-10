@@ -48,7 +48,7 @@
 
                 <div class="progress-container">
                     <div class="progress-labels">
-                        <span>เป้าหมายประจำเดือน: <span id="dash_target" style="color:#d32f2f;">0</span> คัน</span>
+                        <span>เป้าหมายประจำเดือน: <span id="dash_target" style="color:#1565c0;">0</span> คัน</span>
                         <span>รถเข้าจริง: <span id="dash_current" style="color:#2e7d32;">0</span> คัน</span>
                     </div>
                     <div class="progress-bar-bg">
@@ -56,7 +56,7 @@
                     </div>
                 </div>
 
-                <div id="dash_loading" style="text-align: center; padding: 40px; color: #777;"><div class="spinner-small" style="border-top-color:#2e7d32;"></div> กำลังโหลดข้อมูล...</div>
+                <div id="dash_loading" style="text-align: center; padding: 40px; color: #777;"><div class="spinner-small"></div> กำลังโหลดข้อมูล...</div>
                 
                 <div id="dash_charts" style="display: none;">
                     <div class="dash-charts-grid">
@@ -137,17 +137,36 @@
         </section>
 
         <section id="tab-admin" class="tab-content">
-            <div class="card" style="border-top: 5px solid #2e7d32; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #1b5e20; border-bottom-color: #c8e6c9;">⚙️ ผู้ดูแลระบบ (Admin)</h2>
-                <p style="font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.5;">อัปโหลดไฟล์ <b>data.csv</b> ที่ดาวน์โหลดจากระบบตรีเพชร เพื่ออัปเดตสถานะการโทรตามลูกค้าบน Dashboard</p>
+            <div class="card" style="border-top: 5px solid #1565c0; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #0d47a1; border-bottom-color: #bbdefb;">⚙️ ผู้ดูแลระบบ (Admin)</h2>
+                <p style="font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.5;">อัปโหลดไฟล์ <b>data.csv</b> จากระบบตรีเพชร เพื่ออัปเดตสถานะการติดตามลูกค้า</p>
                 
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>เลือกเดือน</label>
+                        <select id="admin_month">
+                            <option value="01">มกราคม</option><option value="02">กุมภาพันธ์</option><option value="03">มีนาคม</option>
+                            <option value="04">เมษายน</option><option value="05">พฤษภาคม</option><option value="06">มิถุนายน</option>
+                            <option value="07">กรกฎาคม</option><option value="08">สิงหาคม</option><option value="09">กันยายน</option>
+                            <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>เลือกปี</label>
+                        <select id="admin_year">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label><i class="fas fa-file-csv" style="color:#2e7d32;"></i> เลือกไฟล์ CSV ข้อมูลปัจจุบัน</label>
+                    <label><i class="fas fa-file-csv" style="color:#1565c0;"></i> เลือกไฟล์ CSV</label>
                     <input type="file" id="csv_file" accept=".csv" style="padding: 10px; font-size: 14px; background: #fff;">
                 </div>
                 
-                <button id="upload-btn" class="btn-submit" onclick="uploadCSV()" style="background: linear-gradient(135deg, #388e3c, #1b5e20);">
-                    <i class="fas fa-rocket"></i> อัปโหลดฐานข้อมูล
+                <button id="upload-btn" class="btn-submit" onclick="uploadCSV()" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+                    <i class="fas fa-rocket"></i> อัปโหลดเข้าฐานข้อมูล
                 </button>
             </div>
         </section>
