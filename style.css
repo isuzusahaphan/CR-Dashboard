@@ -78,6 +78,7 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
     border-radius: 12px; 
     box-shadow: 0 5px 20px rgba(0,0,0,0.06); 
     border: 1px solid #e0e0e0;
+    margin-bottom: 20px;
 }
 .card h2 { 
     font-size: 20px; 
@@ -119,7 +120,7 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .progress-bar-bg { width: 100%; background-color: #e0e0e0; border-radius: 12px; height: 28px; overflow: hidden; position: relative;}
 .progress-bar-fill { background: linear-gradient(90deg, #2e7d32, #4caf50); height: 100%; width: 0%; transition: width 1.5s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
 
-/* 🌟 Report Filters (ดีไซน์ใหม่) 🌟 */
+/* 🌟 Report Filters 🌟 */
 .report-filters { display: flex; gap: 15px; flex-wrap: wrap; background: #f0f2f5; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0;}
 .filter-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px;}
 .filter-group label { font-size: 13px; font-weight: bold; color: #555;}
@@ -174,21 +175,37 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .report-info h4 { margin: 0 0 8px 0; font-size: 16px; color: #333;}
 .report-info p { margin: 0; font-size: 13px; color: #777;}
 
-/* 🎓 Quiz & Training UI (NEW) 🎓 */
-.quiz-card { background: #fdfdfd; padding: 30px; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);}
-.quiz-q-text { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 25px; line-height: 1.6; }
+/* 🎓 Quiz & Training UI 🎓 */
+.quiz-card { background: #fff; padding: 10px 0; }
+.quiz-q-text { font-size: 19px; font-weight: bold; color: #333; margin-bottom: 25px; line-height: 1.6; }
 .quiz-options { display: grid; gap: 12px; }
 .quiz-opt { 
     background: #fff; border: 2px solid #cfd8dc; padding: 18px 20px; border-radius: 8px; 
     cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 15px; color: #555;
 }
 .quiz-opt:hover { border-color: #90caf9; background: #f0f8ff; color: #1565c0; }
-.quiz-opt.selected { border-color: #1565c0; background: #1565c0; color: #fff; box-shadow: 0 4px 10px rgba(21, 101, 192, 0.3);}
+
+/* 🔴 เมื่อตอบผิด */
+.quiz-opt.incorrect { background: #ffebee; border-color: #e53935; color: #b71c1c; }
+/* 🟢 เมื่อตอบถูก */
+.quiz-opt.correct { background: #e8f5e9; border-color: #43a047; color: #1b5e20; }
+/* 🔒 ล็อกไม่ให้คลิกต่อ */
+.quiz-opt.locked { pointer-events: none; opacity: 0.8; }
+
+/* 💡 Explanation Card (NotebookLM Style) */
+.explanation-card { 
+    background: #fff9c4; border-left: 5px solid #fbc02d; padding: 20px; border-radius: 8px; margin-top: 25px;
+    animation: slideUp 0.4s ease;
+}
+.explain-header { font-weight: bold; color: #f57f17; margin-bottom: 8px; font-size: 15px; }
+.explain-body { color: #5d4037; line-height: 1.5; font-size: 15px; }
 
 .history-item { 
     display: flex; justify-content: space-between; align-items: center; 
-    background: #fff; padding: 15px 20px; border-radius: 8px; border-left: 5px solid #4caf50; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border-right: 1px solid #eee; border-top: 1px solid #eee; border-bottom: 1px solid #eee;
+    background: #fff; padding: 15px 20px; border-radius: 8px; border-left: 5px solid #4caf50; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #eee; border-left: 5px solid #4caf50;
 }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* 🌟 Modals 🌟 */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;}
