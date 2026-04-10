@@ -68,6 +68,9 @@
                         <div class="chart-box">
                             <h4 data-tooltip="แสดงยอดรวมรถเข้ารับบริการ แบ่งตามเจ้าหน้าที่ CR">ยอดรถเข้ารับบริการจำแนกตามเจ้าหน้าที่ (คัน)</h4>
                             <div class="chart-container"><canvas id="crChart"></canvas></div>
+                            <div style="text-align: center; font-size: 12.5px; color: #555; margin-top: 15px; background: #e8f5e9; padding: 8px; border-radius: 6px; border: 1px solid #c8e6c9;">
+                                ⏱️ ข้อมูลล่าสุด: <b>กรรณิกา</b> (<span id="update_kannika" style="color:#2e7d32;">-</span>) | <b>เรืองศิริ</b> (<span id="update_ruangsiri" style="color:#1565c0;">-</span>)
+                            </div>
                         </div>
                         
                         <div class="chart-box">
@@ -129,10 +132,31 @@
 
         <section id="tab-reports" class="tab-content">
             <div class="card">
-                <h2>📑 รายงานสรุปผลการปฏิบัติงาน (Executive Reports)</h2>
-                <p style="font-size: 14px; color: #666; margin-bottom: 20px;">เอกสารรายงานสรุปผลการดำเนินงานของฝ่ายลูกค้าสัมพันธ์ ประจำสัปดาห์และประจำเดือน</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h2>📑 รายงานสรุปผลการปฏิบัติงาน</h2>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">เอกสารรายงานสรุปผลการดำเนินงานของฝ่ายลูกค้าสัมพันธ์</p>
+                    </div>
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>รอบประจำเดือน:</label>
+                            <select id="report_period_filter" onchange="filterReports()">
+                                <option value="all">ทุกเดือน (ทั้งหมด)</option>
+                                </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>ประเภทรายงาน:</label>
+                            <select id="report_type_filter" onchange="filterReports()">
+                                <option value="all">ทั้งหมด (รายสัปดาห์และเดือน)</option>
+                                <option value="รายสัปดาห์">เฉพาะรายสัปดาห์</option>
+                                <option value="รายเดือน">เฉพาะรายเดือน</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="reports-container" class="report-list">
-                    <p style="text-align:center; color:#777;">กำลังดึงข้อมูลเอกสาร...</p>
+                    <p style="text-align:center; color:#777; width: 100%;">กำลังดึงข้อมูลเอกสาร...</p>
                 </div>
             </div>
         </section>
