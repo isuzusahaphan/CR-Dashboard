@@ -2,195 +2,151 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background-color: #f0f2f5; 
+    background-color: #f4f7f6; 
     color: #333; 
-    padding-bottom: 30px; 
-    -webkit-tap-highlight-color: transparent;
+    padding-bottom: 40px; 
 }
 
-/* 🌟 Header 🌟 */
+/* 🌟 Header (โทนเขียวหรู) 🌟 */
 header { 
-    background: linear-gradient(135deg, #d32f2f, #b71c1c); 
+    background: linear-gradient(135deg, #1b5e20, #2e7d32); 
     color: white; 
-    padding: 15px 20px; 
+    padding: 18px 30px; 
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15); 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
     position: sticky;
     top: 0;
     z-index: 100;
 }
-header h1 { font-size: 20px; margin: 0; font-weight: 600; letter-spacing: 0.5px; flex: 1; text-align: center;}
+header h1 { font-size: 22px; margin: 0; font-weight: 600; flex: 1; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);}
 .admin-header-btn {
-    background: none; border: none; color: rgba(255,255,255,0.7); font-size: 20px; cursor: pointer; padding: 0; transition: 0.2s;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px;
+    width: 40px; height: 40px; font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
 }
-.admin-header-btn:hover { color: white; transform: scale(1.1);}
+.admin-header-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05);}
 
-/* 🌟 Tabs Navigation 🌟 */
+/* 🌟 Tabs Navigation (กว้างขึ้นสำหรับ PC) 🌟 */
 .tabs { 
     display: flex; 
     background: #fff; 
-    overflow-x: auto; 
-    border-bottom: 1px solid #ddd; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    scrollbar-width: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    justify-content: center; /* ให้อยู่ตรงกลางจอ PC */
 }
-.tabs::-webkit-scrollbar { display: none; }
-
 .tab-btn { 
     flex: 1; 
-    min-width: 80px; 
-    padding: 15px 5px; 
+    max-width: 250px; 
+    padding: 16px 10px; 
     background: none; 
     border: none; 
     border-bottom: 3px solid transparent; 
-    font-size: 13.5px; 
+    font-size: 15px; 
     cursor: pointer; 
-    color: #777; 
+    color: #666; 
     font-weight: 600; 
-    white-space: nowrap; 
     transition: 0.2s ease; 
 }
-.tab-btn.active { color: #d32f2f; border-bottom: 3px solid #d32f2f; }
-.tab-btn i { margin-right: 5px; font-size: 15px;}
+.tab-btn:hover { color: #2e7d32; background: #f1f8e9;}
+.tab-btn.active { color: #1b5e20; border-bottom: 3px solid #2e7d32; background: #e8f5e9;}
+.tab-btn i { margin-right: 6px; font-size: 16px;}
 
-/* 🌟 Main Content & Cards 🌟 */
-main { padding: 20px 15px; max-width: 600px; margin: 0 auto; }
-.tab-content { display: none; animation: fadeIn 0.3s ease; }
+/* 🌟 Main Content & Cards (กว้าง 1200px สำหรับจอ PC) 🌟 */
+main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
+.tab-content { display: none; animation: fadeIn 0.4s ease; }
 .tab-content.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
 .card { 
     background: white; 
-    padding: 25px 20px; 
+    padding: 30px; 
     border-radius: 12px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-    border: 1px solid #eee;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.06); 
+    border: 1px solid #e0e0e0;
 }
 .card h2 { 
-    font-size: 18px; 
-    color: #1a237e; 
-    border-bottom: 2px solid #e8eaf6; 
+    font-size: 20px; 
+    color: #1b5e20; 
+    border-bottom: 2px solid #c8e6c9; 
     padding-bottom: 12px; 
     margin-bottom: 20px; 
     margin-top: 0; 
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
+
+/* 🌟 Dashboard Layout (Grid สำหรับ PC) 🌟 */
+.dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+.dash-header h2 { margin: 0; border: none; padding: 0; }
+.dash-filters select { padding: 8px 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; font-weight: 600; color: #333; outline: none; background: #fafafa;}
+.dash-filters select:focus { border-color: #4caf50; }
+
+.dash-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;}
+.chart-box { background: #fafafa; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
+.chart-box h4 { color: #555; text-align: center; margin-bottom: 15px; font-size: 16px; font-weight: 600;}
+.chart-container { position: relative; height: 280px; width: 100%; }
+
+/* 🌟 CSV Tracking Cards (Grid Layout) 🌟 */
+#dash_csv_tracking { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 20px;}
+.csv-card { background: #fff; padding: 20px; border-radius: 10px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: 0.2s;}
+.csv-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.08); border-color: #a5d6a7;}
+.csv-title { font-size: 15px; color: #2e7d32; font-weight: bold; margin-bottom: 10px; min-height: 40px;}
+
+/* 🌟 Progress Bars 🌟 */
+.progress-container { background: #f1f8e9; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #c8e6c9; }
+.progress-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 16px; color: #333; }
+.progress-bar-bg { width: 100%; background-color: #e0e0e0; border-radius: 12px; height: 28px; overflow: hidden; position: relative;}
+.progress-bar-fill { background: linear-gradient(90deg, #388e3c, #81c784); height: 100%; width: 0%; transition: width 1.5s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
 
 /* 🌟 Forms 🌟 */
 .form-group { margin-bottom: 20px; }
-.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #424242; font-size: 14.5px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #424242; font-size: 15px; }
 .form-group input, .form-group select { 
-    width: 100%; 
-    padding: 14px; 
-    border: 1.5px solid #cfd8dc; 
-    border-radius: 8px; 
-    font-size: 16px; 
-    transition: 0.3s;
-    background-color: #fafafa;
-    color: #333;
+    width: 100%; padding: 14px; border: 1.5px solid #cfd8dc; border-radius: 8px; font-size: 16px; transition: 0.3s; background-color: #fafafa; color: #333;
 }
-.form-group input:focus, .form-group select:focus { 
-    border-color: #d32f2f; 
-    background-color: #fff;
-    outline: none; 
-    box-shadow: 0 0 0 4px rgba(211,47,47,0.1); 
-}
-.input-number-group input { font-size: 20px; font-weight: bold; text-align: center; color: #1565c0;}
+.form-group input:focus, .form-group select:focus { border-color: #4caf50; background-color: #fff; outline: none; box-shadow: 0 0 0 4px rgba(76,175,80,0.1); }
+.input-number-group input { font-size: 22px; font-weight: bold; text-align: center; color: #1b5e20;}
 
 /* 🌟 Total Box 🌟 */
-.total-box { 
-    background-color: #e8f5e9; 
-    padding: 20px; 
-    border-radius: 8px; 
-    border: 2px solid #81c784; 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-}
-.total-box label { color: #2e7d32; font-size: 16px; margin: 0;}
-.total-box input { 
-    background-color: transparent; 
-    border: none; 
-    font-size: 32px; 
-    font-weight: bold; 
-    color: #2e7d32; 
-    text-align: right; 
-    padding: 0; 
-    width: 80px;
-    pointer-events: none; 
-}
-
-/* 🌟 Dashboard UI (Progress Bar & Charts) 🌟 */
-.progress-container { background: #fafafa; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e0e0e0; }
-.progress-labels { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: #424242; }
-.progress-bar-bg { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 22px; overflow: hidden; position: relative;}
-.progress-bar-fill { background: linear-gradient(90deg, #4caf50, #81c784); height: 100%; width: 0%; transition: width 1.5s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
-.chart-container { position: relative; height: 250px; width: 100%; }
+.total-box { background-color: #e8f5e9; padding: 20px; border-radius: 8px; border: 2px solid #81c784; display: flex; justify-content: space-between; align-items: center; margin-top: 10px;}
+.total-box label { color: #2e7d32; font-size: 18px; margin: 0; font-weight: bold;}
+.total-box input { background-color: transparent; border: none; font-size: 36px; font-weight: bold; color: #1b5e20; text-align: right; padding: 0; width: 100px; pointer-events: none; }
 
 /* 🌟 Buttons 🌟 */
 .btn-submit { 
-    width: 100%; 
-    padding: 16px; 
-    background: linear-gradient(135deg, #4caf50, #2e7d32); 
-    color: white; 
-    border: none; 
-    border-radius: 8px; 
-    font-size: 18px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    transition: 0.2s; 
-    margin-top: 15px; 
-    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
+    width: 100%; padding: 18px; background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 20px; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px;
 }
-.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4); }
-.btn-submit:active { transform: translateY(0); }
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4); background: linear-gradient(135deg, #43a047, #1b5e20);}
 .btn-submit:disabled { background: #9e9e9e; box-shadow: none; cursor: not-allowed; transform: none;}
 
-/* 🌟 Promo & Reports UI 🌟 */
-.promo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-.promo-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; transition: 0.2s;}
-.promo-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-color: #d32f2f;}
-.promo-card h4 { color: #d32f2f; margin-bottom: 8px; font-size: 15px;}
-.promo-card p { font-size: 12.5px; color: #666; margin-bottom: 12px; line-height: 1.4;}
-.btn-view { background: #1565c0; color: white; padding: 8px 12px; border: none; border-radius: 5px; font-size: 13px; cursor: pointer; width: 100%; text-decoration: none; display: inline-block; font-weight: bold;}
-.btn-view:hover { background: #0d47a1; }
+/* 🌟 Promo & Reports UI (Grid สำหรับ PC) 🌟 */
+.promo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+.promo-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; box-shadow: 0 3px 8px rgba(0,0,0,0.04); text-align: center; transition: 0.2s;}
+.promo-card:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0,0,0,0.08); border-color: #81c784;}
+.promo-card h4 { color: #1b5e20; margin-bottom: 10px; font-size: 18px;}
+.promo-card p { font-size: 14px; color: #666; margin-bottom: 15px; line-height: 1.5;}
+.btn-view { background: #2e7d32; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; width: 100%; text-decoration: none; display: inline-block; font-weight: bold; transition: 0.2s;}
+.btn-view:hover { background: #1b5e20; }
 
-.report-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px;}
-.report-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border: 1px solid #e0e0e0; border-left: 4px solid #4caf50; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-.report-item.monthly { border-left-color: #9c27b0; }
-.report-info h4 { margin: 0 0 5px 0; font-size: 14.5px; color: #333;}
-.report-info p { margin: 0; font-size: 12px; color: #777;}
+.report-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px; margin-top: 15px;}
+.report-item { display: flex; justify-content: space-between; align-items: center; background: #fafafa; padding: 20px; border: 1px solid #e0e0e0; border-left: 5px solid #4caf50; border-radius: 8px; transition: 0.2s;}
+.report-item:hover { background: #fff; border-color: #81c784; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+.report-item.monthly { border-left-color: #1565c0; }
+.report-info h4 { margin: 0 0 8px 0; font-size: 16px; color: #333;}
+.report-info p { margin: 0; font-size: 13px; color: #777;}
 
-@media (max-width: 600px) {
-    .promo-grid { grid-template-columns: 1fr; }
+/* 📱 Responsive สำหรับหน้าจอมือถือ (เผื่อเอาไว้) 📱 */
+@media (max-width: 768px) {
+    .dash-charts-grid { grid-template-columns: 1fr; }
+    .tabs { justify-content: flex-start; }
+    .tab-btn { min-width: 100px; padding: 12px 5px; font-size: 13px;}
+    .card { padding: 20px 15px; }
+    main { padding: 15px 10px; }
 }
 
-/* 🌟 Utilities & Spinner 🌟 */
-.construction-box { text-align: center; padding: 40px 20px; background: #f9f9f9; border-radius: 8px; border: 2px dashed #ddd;}
-.construction-box p { color: #777; line-height: 1.6; }
-
-.overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.7); 
-    backdrop-filter: blur(3px);
-    display: flex; flex-direction: column; justify-content: center; align-items: center; 
-    z-index: 2000; 
-}
-.spinner { 
-    width: 60px; height: 60px; 
-    border: 6px solid rgba(255,255,255,0.2); 
-    border-top: 6px solid #fff; 
-    border-radius: 50%; 
-    animation: spin 1s linear infinite; 
-}
-.spinner-small { width: 30px; height: 30px; border-width: 4px; border-top-color: #d32f2f; animation: spin 1s linear infinite; margin: 0 auto;}
+/* 🌟 Overlay & Spinner 🌟 */
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(3px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
+.spinner { width: 70px; height: 70px; border: 6px solid rgba(255,255,255,0.2); border-top: 6px solid #4caf50; border-radius: 50%; animation: spin 1s linear infinite; }
+.spinner-small { width: 40px; height: 40px; border-width: 4px; border-top-color: #4caf50; animation: spin 1s linear infinite; margin: 0 auto;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
