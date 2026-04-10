@@ -6,6 +6,7 @@
     <title>CR Assistant Hub</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -67,10 +68,46 @@
 
         <section id="tab-dashboard" class="tab-content">
             <div class="card">
-                <h2>📊 Performance Dashboard</h2>
-                <div class="construction-box">
-                    <i class="fas fa-tools" style="font-size: 40px; color: #ff9800; margin-bottom: 15px;"></i>
-                    <p>ระบบกราฟประมวลผล<br>กำลังก่อสร้างในเฟสที่ 3 ครับ 🚧</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="margin: 0; border: none; padding: 0;">📊 Dashboard</h2>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="dash_month" onchange="loadDashboard()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="01">ม.ค.</option><option value="02">ก.พ.</option><option value="03">มี.ค.</option>
+                            <option value="04">เม.ย.</option><option value="05">พ.ค.</option><option value="06">มิ.ย.</option>
+                            <option value="07">ก.ค.</option><option value="08">ส.ค.</option><option value="09">ก.ย.</option>
+                            <option value="10">ต.ค.</option><option value="11">พ.ย.</option><option value="12">ธ.ค.</option>
+                        </select>
+                        <select id="dash_year" onchange="loadDashboard()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-labels">
+                        <span>เป้าหมาย: <span id="dash_target" style="color:#d32f2f;">0</span> คัน</span>
+                        <span>ทำได้แล้ว: <span id="dash_current" style="color:#2e7d32;">0</span> คัน</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="dash_progress">0%</div>
+                    </div>
+                </div>
+
+                <div id="dash_loading" style="text-align: center; padding: 20px; color: #777; display: none;">กำลังคำนวณข้อมูลกราฟ...</div>
+                
+                <div id="dash_charts" style="display: block;">
+                    <h4 style="color:#555; text-align:center; margin-bottom:10px; font-size:14px;">ยอดรถเข้าแยกตามพนักงาน (คัน)</h4>
+                    <div class="chart-container">
+                        <canvas id="crChart"></canvas>
+                    </div>
+                    
+                    <hr style="border: 0.5px dashed #eee; margin: 25px 0;">
+                    
+                    <h4 style="color:#555; text-align:center; margin-bottom:10px; font-size:14px;">สัดส่วนประเภทการนัดหมาย</h4>
+                    <div class="chart-container" style="height: 220px;">
+                        <canvas id="typeChart"></canvas>
+                    </div>
                 </div>
             </div>
         </section>
