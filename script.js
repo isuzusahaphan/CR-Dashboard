@@ -16,6 +16,16 @@ let currentQuestionIndex = 0;
 let userAnswers = [];
 let score = 0;
 
+// 🔥 ฟังก์ชันช่วยแสดง Loading หรูๆ
+function showLoading(text) {
+  Swal.fire({
+    title: text,
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const today = new Date();
     document.getElementById('record_date').value = today.toLocaleDateString('en-CA');
@@ -52,14 +62,26 @@ function switchTab(evt, tabId) {
     if (tabId === 'tab-training') { loadQuizTopics(); loadScoreHistory(); }
 }
 
-function openAdminTab() {
-    const pin = prompt("🔒 กรุณาใส่รหัสผ่าน Administrator (รหัสเริ่มต้น: 1234):");
+// 🔥 อัปเกรดการถามรหัสผ่าน (Admin PIN)
+async function openAdminTab() {
+    const { value: pin } = await Swal.fire({
+        title: '🔒 Administrator',
+        input: 'password',
+        inputLabel: 'กรุณาใส่รหัสผ่านผู้ดูแลระบบ',
+        inputPlaceholder: 'รหัสเริ่มต้น: 1234',
+        showCancelButton: true,
+        confirmButtonColor: '#1565c0',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'เข้าสู่ระบบ',
+        cancelButtonText: 'ยกเลิก'
+    });
+
     if (pin === "1234") {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('tab-admin').classList.add('active');
-    } else if (pin !== null && pin !== "") {
-        alert("❌ รหัสผ่านไม่ถูกต้อง การเข้าถึงถูกปฏิเสธ");
+    } else if (pin) {
+        Swal.fire({ icon: 'error', title: 'ปฏิเสธการเข้าถึง', text: 'รหัสผ่านไม่ถูกต้อง!', confirmButtonColor: '#1565c0' });
     }
 }
 
@@ -74,13 +96,14 @@ const donutFormatter = (value, ctx) => {
     return [value + " คัน", "(" + percentage + ")"]; 
 };
 
-// ฟังก์ชันสำหรับสร้างสี Gradient แบบใช้ซ้ำได้ง่ายๆ
 function createGradient(ctx, colorStart, colorEnd) {
     let gradient = ctx.createLinearGradient(0, 0, 0, 300);
     gradient.addColorStop(0, colorStart);
     gradient.addColorStop(1, colorEnd);
     return gradient;
 }
+
+let hasCelebratedCR100 = false; // ป้องกันพลุยิงซ้ำซาก
 
 function loadDashboard() {
     const month = document.getElementById('dash_month').value; 
@@ -114,33 +137,37 @@ function loadDashboard() {
             if(percent >= 100) { 
                 pb.style.background = "linear-gradient(90deg, #1b5e20, #388e3c)"; 
                 motivationText = "🏆 ยอดเยี่ยมเหนือความคาดหมาย! ผลงานทะลุเป้าหมายประจำเดือนแล้ว ขอเสียงปรบมือให้ทีม CR ครับ 🎉"; 
+                
+                // 🔥 ยิงพลุเมื่อยอดเป้าหมาย CR ทะลุ 100%
+                if(!hasCelebratedCR100) {
+                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 3000 });
+                    hasCelebratedCR100 = true;
+                }
             } else if(percent >= 80) { 
                 pb.style.background = "linear-gradient(90deg, #388e3c, #81c784)"; 
                 motivationText = "🔥 โค้งสุดท้ายแล้ว! ผลงานทะลุ 80% ลุยอีกนิดเดียวเป้าหมายอยู่แค่เอื้อมครับ 🚀"; 
+                hasCelebratedCR100 = false;
             } else if(percent >= 50) { 
                 pb.style.background = "linear-gradient(90deg, #1565c0, #4fc3f7)"; 
                 motivationText = "💪 เดินทางมาเกินครึ่งทางแล้ว! รักษามาตรฐานการทำงานที่ยอดเยี่ยมนี้ต่อไปครับ ✨"; 
+                hasCelebratedCR100 = false;
             } else { 
                 pb.style.background = "linear-gradient(90deg, #d32f2f, #e57373)"; 
                 motivationText = "🌱 เริ่มต้นเป้าหมายใหม่ ค่อยๆ สะสมยอดไปทีละคัน เป็นกำลังใจให้ทีม CR ทุกคนครับ ✌️"; 
+                hasCelebratedCR100 = false;
             }
             document.getElementById('dash_motivation').innerHTML = motivationText;
 
-            // --- 🔥 สร้างกราฟแท่ง (Bar Chart) แบบ Gradient 🔥 ---
             const barCtx = document.getElementById('crChart').getContext('2d');
-            const barGradKannika = createGradient(barCtx, '#4ade80', '#15803d'); // เขียวสว่าง -> เขียวเข้ม
-            const barGradRuangsiri = createGradient(barCtx, '#60a5fa', '#1d4ed8'); // ฟ้าสว่าง -> น้ำเงินเข้ม
+            const barGradKannika = createGradient(barCtx, '#4ade80', '#15803d'); 
+            const barGradRuangsiri = createGradient(barCtx, '#60a5fa', '#1d4ed8'); 
 
             if (crChartInstance) crChartInstance.destroy();
             crChartInstance = new Chart(barCtx, {
                 type: 'bar',
                 data: { 
                     labels: ['กรรณิกา', 'เรืองศิริ'], 
-                    datasets: [{ 
-                        data: [d.kannika, d.ruangsiri], 
-                        backgroundColor: [barGradKannika, barGradRuangsiri], 
-                        borderRadius: 6 
-                    }] 
+                    datasets: [{ data: [d.kannika, d.ruangsiri], backgroundColor: [barGradKannika, barGradRuangsiri], borderRadius: 6 }] 
                 },
                 options: { 
                     responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, 
@@ -149,11 +176,10 @@ function loadDashboard() {
                 }
             });
 
-            // --- 🔥 สร้างกราฟโดนัท (Donut Chart) แบบ Gradient 🔥 ---
             const typeCtx = document.getElementById('typeChart').getContext('2d');
-            const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); // ระบบตรีเพชร (เขียว)
-            const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); // ติดต่อด้วยตนเอง (ส้มทอง)
-            const donutGrad3 = createGradient(typeCtx, '#38bdf8', '#0369a1'); // Walk-in/แนะนำ (ฟ้า)
+            const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); 
+            const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); 
+            const donutGrad3 = createGradient(typeCtx, '#38bdf8', '#0369a1'); 
             const donutGradients = [donutGrad1, donutGrad2, donutGrad3];
 
             if (typeChartInstance) typeChartInstance.destroy();
@@ -210,9 +236,8 @@ function loadDashboard() {
     });
 }
 
-// เปิด Popup ดูกราฟรายบุคคล
 function openBreakdownModal() {
-    if (!currentDashboardData) return alert("⚠️ ข้อมูลยังไม่พร้อม กรุณารอสักครู่");
+    if (!currentDashboardData) return Swal.fire({ icon: 'warning', text: 'ข้อมูลยังไม่พร้อม กรุณารอสักครู่' });
     const d = currentDashboardData;
     document.getElementById('breakdown-modal').style.display = 'flex';
 
@@ -220,7 +245,6 @@ function openBreakdownModal() {
         const kanCtx = document.getElementById('kannikaChart').getContext('2d');
         const ruangCtx = document.getElementById('ruangsiriChart').getContext('2d');
         
-        // สร้างสี Gradient ชุดเดิมสำหรับโดนัทรายบุคคล
         const dGrad1 = createGradient(kanCtx, '#34d399', '#047857'); 
         const dGrad2 = createGradient(kanCtx, '#fbbf24', '#b45309'); 
         const dGrad3 = createGradient(kanCtx, '#38bdf8', '#0369a1'); 
@@ -256,46 +280,59 @@ function calculateTotal() {
     document.getElementById('type_total').value = tripetch + inbound + referral;
 }
 
+// 🔥 อัปเกรด Alert บันทึกข้อมูล
 function saveRecord() {
     const crName = document.getElementById('cr_name').value;
     const recordDate = document.getElementById('record_date').value;
     
-    if (!recordDate) return alert("⚠️ กรุณาระบุวันที่ก่อนทำรายการ");
+    if (!recordDate) return Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุวันที่ก่อนทำรายการ', confirmButtonColor: '#1565c0' });
     
     const tot = parseInt(document.getElementById('type_total').value) || 0;
-    if (tot === 0 && !confirm("ยอดรวมรถเข้ารับบริการเป็น 0 คัน ยืนยันที่จะส่งข้อมูลเข้าสู่ระบบหรือไม่?")) return;
-    
-    localStorage.setItem('cr_hub_name', crName);
 
-    const payload = { 
-        action: "save_record", date: recordDate, cr_name: crName, 
-        tripetch: parseInt(document.getElementById('type_tripetch').value) || 0, 
-        inbound: parseInt(document.getElementById('type_inbound').value) || 0, 
-        referral: parseInt(document.getElementById('type_referral').value) || 0, 
-        total: tot 
+    const executeSave = () => {
+        localStorage.setItem('cr_hub_name', crName);
+        const payload = { 
+            action: "save_record", date: recordDate, cr_name: crName, 
+            tripetch: parseInt(document.getElementById('type_tripetch').value) || 0, 
+            inbound: parseInt(document.getElementById('type_inbound').value) || 0, 
+            referral: parseInt(document.getElementById('type_referral').value) || 0, 
+            total: tot 
+        };
+        
+        showLoading('กำลังบันทึกข้อมูล...');
+
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(r => r.json())
+        .then(data => {
+            if(data.result === 'success') { 
+                Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกข้อมูลเข้าสู่ระบบเรียบร้อยแล้ว', timer: 2000, showConfirmButton: false });
+                document.getElementById('type_tripetch').value = 0; 
+                document.getElementById('type_inbound').value = 0; 
+                document.getElementById('type_referral').value = 0; 
+                calculateTotal(); 
+            }
+        })
+        .catch(e => { 
+            Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่' });
+        });
     };
-    
-    const btn = document.getElementById('save-btn'); 
-    const overlay = document.getElementById('loading-overlay');
-    btn.disabled = true; 
-    overlay.style.display = "flex";
 
-    fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-    .then(r => r.json())
-    .then(data => {
-        overlay.style.display = "none"; btn.disabled = false;
-        if(data.result === 'success') { 
-            alert("✅ บันทึกข้อมูลเข้าสู่ระบบเรียบร้อยแล้ว"); 
-            document.getElementById('type_tripetch').value = 0; 
-            document.getElementById('type_inbound').value = 0; 
-            document.getElementById('type_referral').value = 0; 
-            calculateTotal(); 
-        }
-    })
-    .catch(e => { 
-        overlay.style.display = "none"; btn.disabled = false; 
-        alert("✅ ส่งข้อมูลสำเร็จ!"); 
-    });
+    if (tot === 0) {
+        Swal.fire({
+            title: 'ยอดรวมเป็น 0 คัน',
+            text: "คุณแน่ใจหรือไม่ที่จะส่งข้อมูลยอดเป็น 0 เข้าสู่ระบบ?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#1565c0',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'ยืนยันส่งข้อมูล',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) executeSave();
+        });
+    } else {
+        executeSave();
+    }
 }
 
 // ==========================================
@@ -325,10 +362,7 @@ function loadScoreHistory() {
             
             reversedData.forEach(h => {
                 let key = h.name + "_" + h.topic; 
-                if(!seen.has(key)) {
-                    seen.add(key);
-                    uniqueHistory.push(h);
-                }
+                if(!seen.has(key)) { seen.add(key); uniqueHistory.push(h); }
             });
 
             uniqueHistory.slice(0, 10).forEach(h => {
@@ -344,18 +378,19 @@ function loadScoreHistory() {
     });
 }
 
+// 🔥 อัปเกรด Alert การเริ่มสอบ
 function prepareQuiz() {
     const topic = document.getElementById('quiz_topic_list').value;
     const name = document.getElementById('quiz_user_name').value;
-    if(!topic) return alert("⚠️ กรุณาเลือกหัวข้อแบบทดสอบก่อนเริ่มต้นครับ");
+    if(!topic) return Swal.fire({ icon: 'warning', title: 'ช้าก่อน!', text: 'กรุณาเลือกหัวข้อแบบทดสอบก่อนเริ่มสอบครับ', confirmButtonColor: '#1565c0' });
     
     localStorage.setItem('cr_hub_name', name);
-    document.getElementById('loading-overlay').style.display = 'flex';
+    showLoading('กำลังจัดเตรียมข้อสอบ...');
     
     fetch(`${API_URL}?action=get_quiz_questions&topic=${encodeURIComponent(topic.trim())}`)
     .then(r => r.json())
     .then(res => {
-        document.getElementById('loading-overlay').style.display = 'none';
+        Swal.close();
         if(res.result === 'success' && res.data.length > 0) {
             currentQuestions = res.data;
             currentQuestionIndex = 0;
@@ -368,12 +403,12 @@ function prepareQuiz() {
             
             showQuestion();
         } else {
-            alert("❌ ไม่พบคำถามในหัวข้อนี้ กรุณาติดต่อผู้ดูแลระบบ");
+            Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล', text: 'ไม่พบคำถามในหัวข้อนี้ กรุณาติดต่อแอดมิน', confirmButtonColor: '#d33' });
         }
     })
     .catch(e => {
-        document.getElementById('loading-overlay').style.display = 'none';
-        alert("❌ เชื่อมต่อฐานข้อมูลล้มเหลว");
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'เครือข่ายขัดข้อง', text: 'เชื่อมต่อฐานข้อมูลล้มเหลว', confirmButtonColor: '#d33' });
     });
 }
 
@@ -383,7 +418,6 @@ function showQuestion() {
     
     document.getElementById('explanation_box').style.display = 'none';
     document.getElementById('next-q-btn').style.display = 'none';
-    
     document.getElementById('q_text').innerText = `${currentQuestionIndex + 1}. ${q.q}`;
     
     let optionsHtml = '';
@@ -398,7 +432,7 @@ function showQuestion() {
         optionsHtml += `
         <div class="quiz-opt-container" id="container-${choice.id}">
             <div class="quiz-opt-header" onclick="checkAnswer('${choice.id}')">
-                <span style="background:#f1f5f9; padding:5px 10px; border-radius:5px; font-weight:bold; color:#475569;">${choice.id}</span>
+                <span style="background:#eee; padding:5px 10px; border-radius:5px; font-weight:bold; color:#333;">${choice.id}</span>
                 ${choice.text}
             </div>
             <div class="opt-explain" id="explain-${choice.id}">
@@ -445,16 +479,10 @@ function checkAnswer(userAns) {
     }
 }
 
-function nextQuestion() {
-    if(currentQuestionIndex < currentQuestions.length - 1) {
-        currentQuestionIndex++;
-        showQuestion();
-    } else {
-        finishQuiz();
-    }
-}
-
+// 🔥 อัปเกรดตอนประเมินผลคะแนน
 function finishQuiz() {
+    showLoading('กำลังประมวลผลคะแนน...');
+    
     const payload = {
         action: 'save_quiz_score',
         cr_name: document.getElementById('quiz_user_name').value,
@@ -462,24 +490,34 @@ function finishQuiz() {
         score: score,
         full_score: currentQuestions.length
     };
-
-    document.getElementById('loading-overlay').style.display = 'flex';
     
     fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
     .then(r => r.json())
     .then(res => {
-        document.getElementById('loading-overlay').style.display = 'none';
+        Swal.close();
         document.getElementById('quiz-container').style.display = 'none';
         document.getElementById('quiz-result').style.display = 'block';
         
         const pct = (score / currentQuestions.length) * 100;
-        document.getElementById('result-icon').innerHTML = pct >= 80 ? '<i class="fas fa-trophy" style="color:#f59e0b;"></i>' : (pct >= 50 ? '<i class="fas fa-thumbs-up" style="color:#0ea5e9;"></i>' : '<i class="fas fa-book" style="color:#64748b;"></i>');
+        let iconHtml = '';
+        
+        if (pct >= 80) {
+           iconHtml = '<i class="fas fa-trophy" style="color:#f59e0b;"></i>';
+           // 🔥 ยิงพลุฉลองคนเก่ง! 🔥
+           confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, zIndex: 3000 });
+        } else if (pct >= 50) {
+           iconHtml = '<i class="fas fa-thumbs-up" style="color:#0ea5e9;"></i>';
+        } else {
+           iconHtml = '<i class="fas fa-book" style="color:#64748b;"></i>';
+        }
+        
+        document.getElementById('result-icon').innerHTML = iconHtml;
         document.getElementById('result-score-text').innerText = `คุณทำได้ ${score} / ${currentQuestions.length} คะแนน`;
         document.getElementById('result-attempt-text').innerText = `(บันทึกเป็นความพยายามการสอบครั้งที่ ${res.attempt})`;
     })
     .catch(e => {
-        document.getElementById('loading-overlay').style.display = 'none';
-        alert("❌ เกิดข้อผิดพลาดในการบันทึกคะแนน");
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถบันทึกคะแนนได้', confirmButtonColor: '#d33' });
     });
 }
 
@@ -581,17 +619,16 @@ function loadPromotions() {
 // ==========================================
 // 🌟 แท็บ 6: ผู้ดูแลระบบ (Admin)
 // ==========================================
+// 🔥 อัปเกรด Alert อัปโหลดไฟล์ CSV
 function uploadCSV() {
     const fileInput = document.getElementById('csv_file');
     const file = fileInput.files[0];
     const adminMonth = document.getElementById('admin_month').value;
     const adminYear = document.getElementById('admin_year').value;
 
-    if (!file) return alert("⚠️ กรุณาแนบไฟล์นามสกุล .csv ก่อนทำรายการ");
+    if (!file) return Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาแนบไฟล์นามสกุล .csv ก่อนทำรายการ', confirmButtonColor: '#1565c0' });
 
-    const btn = document.getElementById('upload-btn');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังประมวลผลข้อมูล...';
-    btn.disabled = true;
+    showLoading('กำลังอัปโหลดและประมวลผลข้อมูล...');
 
     Papa.parse(file, {
         header: true, skipEmptyLines: true,
@@ -602,17 +639,19 @@ function uploadCSV() {
             fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(r => r.json())
             .then(res => {
-                btn.innerHTML = '<i class="fas fa-database"></i> ปรับปรุงฐานข้อมูล'; btn.disabled = false;
+                Swal.close();
                 if(res.result === 'success') { 
-                    alert("✅ ปรับปรุงฐานข้อมูลสำเร็จ! ข้อมูลถูกบันทึกในเดือนที่ระบุเรียบร้อยแล้ว"); 
+                    Swal.fire({ icon: 'success', title: 'อัปเดตสำเร็จ!', text: 'ข้อมูลถูกบันทึกในเดือนที่ระบุเรียบร้อยแล้ว', confirmButtonColor: '#1565c0' });
                     fileInput.value = ""; 
                     document.getElementById('dash_month').value = adminMonth; 
                     document.getElementById('dash_year').value = adminYear;
                     switchTab({currentTarget: document.querySelector('.tab-btn')}, 'tab-dashboard');
-                } else alert("❌ ข้อผิดพลาดเซิร์ฟเวอร์: " + res.message);
+                } else {
+                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: res.message, confirmButtonColor: '#d33' });
+                }
             }).catch(e => {
-                btn.innerHTML = '<i class="fas fa-database"></i> ปรับปรุงฐานข้อมูล'; btn.disabled = false;
-                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+                Swal.close();
+                Swal.fire({ icon: 'error', title: 'เครือข่ายขัดข้อง', text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ', confirmButtonColor: '#d33' });
             });
         }
     });
