@@ -287,7 +287,27 @@ function loadScoreHistory() {
     .then(res => {
         if(res.result === 'success') {
             let html = '';
-            res.data.reverse().slice(0, 10).forEach(h => {
+            
+            // 1. นำข้อมูลมากลับด้าน (ใหม่สุดอยู่บน)
+            const reversedData = res.data.reverse();
+            
+            // 2. ใช้ Set ในการช่วยกรอง (จับกลุ่ม) เอาเฉพาะอันล่าสุดของแต่ละคน+วิชา
+            const uniqueHistory = [];
+            const seen = new Set();
+            
+            reversedData.forEach(h => {
+                // สร้าง Key สำหรับตรวจสอบการซ้ำกัน เช่น "กรรณิกา_ISUZU my-MEMBER"
+                let key = h.name + "_" + h.topic; 
+                
+                // ถ้าระบบยังไม่เคยจำ Key นี้ แปลว่าเป็นข้อมูลรอบล่าสุด ให้เก็บไว้เลย
+                if(!seen.has(key)) {
+                    seen.add(key);
+                    uniqueHistory.push(h);
+                }
+            });
+
+            // 3. นำข้อมูลที่กรองจนเหลือแค่การ์ดเดียวต่อคนมาลูปสร้างหน้าตา
+            uniqueHistory.slice(0, 10).forEach(h => {
                 html += `<div class="history-item">
                     <div><b>${h.name}</b><br><span style="color:#555; font-size: 13px;">${h.topic}</span><br><small style="color:#999;">${new Date(h.date).toLocaleDateString('th-TH')}</small></div>
                     <div style="text-align:right">คะแนน: <b style="color:#1b5e20; font-size: 18px;">${h.score}/${h.full}</b><br><span style="font-size: 12px; color:#666;">รอบที่สอบ: ${h.attempt}</span></div>
