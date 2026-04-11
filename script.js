@@ -9,7 +9,6 @@ let ruangsiriChartInstance = null;
 let currentDashboardData = null; 
 
 let allReportsList = [];
-const donutColors = ['#43a047', '#fb8c00', '#1e88e5'];
 
 // ตัวแปรสำหรับระบบศูนย์ฝึกอบรม (Training Quiz)
 let currentQuestions = [];
@@ -75,6 +74,14 @@ const donutFormatter = (value, ctx) => {
     return [value + " คัน", "(" + percentage + ")"]; 
 };
 
+// ฟังก์ชันสำหรับสร้างสี Gradient แบบใช้ซ้ำได้ง่ายๆ
+function createGradient(ctx, colorStart, colorEnd) {
+    let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, colorStart);
+    gradient.addColorStop(1, colorEnd);
+    return gradient;
+}
+
 function loadDashboard() {
     const month = document.getElementById('dash_month').value; 
     const year = document.getElementById('dash_year').value;
@@ -119,32 +126,48 @@ function loadDashboard() {
             }
             document.getElementById('dash_motivation').innerHTML = motivationText;
 
+            // --- 🔥 สร้างกราฟแท่ง (Bar Chart) แบบ Gradient 🔥 ---
+            const barCtx = document.getElementById('crChart').getContext('2d');
+            const barGradKannika = createGradient(barCtx, '#4ade80', '#15803d'); // เขียวสว่าง -> เขียวเข้ม
+            const barGradRuangsiri = createGradient(barCtx, '#60a5fa', '#1d4ed8'); // ฟ้าสว่าง -> น้ำเงินเข้ม
+
             if (crChartInstance) crChartInstance.destroy();
-            crChartInstance = new Chart(document.getElementById('crChart'), {
+            crChartInstance = new Chart(barCtx, {
                 type: 'bar',
                 data: { 
                     labels: ['กรรณิกา', 'เรืองศิริ'], 
-                    datasets: [{ data: [d.kannika, d.ruangsiri], backgroundColor: ['#2e7d32', '#1565c0'], borderRadius: 6 }] 
+                    datasets: [{ 
+                        data: [d.kannika, d.ruangsiri], 
+                        backgroundColor: [barGradKannika, barGradRuangsiri], 
+                        borderRadius: 6 
+                    }] 
                 },
                 options: { 
                     responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, 
-                    plugins: { legend: { display: false }, datalabels: { color: '#0d47a1', font: { weight: 'bold', size: 16 }, anchor: 'end', align: 'top', offset: 4, formatter: v => v > 0 ? v : '' } }, 
+                    plugins: { legend: { display: false }, datalabels: { color: '#334155', font: { weight: 'bold', size: 16 }, anchor: 'end', align: 'top', offset: 4, formatter: v => v > 0 ? v : '' } }, 
                     scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } 
                 }
             });
 
+            // --- 🔥 สร้างกราฟโดนัท (Donut Chart) แบบ Gradient 🔥 ---
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); // ระบบตรีเพชร (เขียว)
+            const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); // ติดต่อด้วยตนเอง (ส้มทอง)
+            const donutGrad3 = createGradient(typeCtx, '#38bdf8', '#0369a1'); // Walk-in/แนะนำ (ฟ้า)
+            const donutGradients = [donutGrad1, donutGrad2, donutGrad3];
+
             if (typeChartInstance) typeChartInstance.destroy();
-            typeChartInstance = new Chart(document.getElementById('typeChart'), {
+            typeChartInstance = new Chart(typeCtx, {
                 type: 'doughnut',
                 data: { 
                     labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], 
-                    datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: donutColors, borderWidth: 2 }] 
+                    datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] 
                 },
                 options: { 
                     responsive: true, maintainAspectRatio: false, cutout: '55%', 
                     plugins: { 
-                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 13 } } }, 
-                        datalabels: { color: '#fff', font: { weight: 'bold', size: 13 }, textAlign: 'center', formatter: donutFormatter } 
+                        legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 10, font: { size: 13 } } }, 
+                        datalabels: { color: '#fff', font: { weight: 'bold', size: 13 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } 
                     } 
                 }
             });
@@ -187,25 +210,34 @@ function loadDashboard() {
     });
 }
 
+// เปิด Popup ดูกราฟรายบุคคล
 function openBreakdownModal() {
     if (!currentDashboardData) return alert("⚠️ ข้อมูลยังไม่พร้อม กรุณารอสักครู่");
     const d = currentDashboardData;
-    
     document.getElementById('breakdown-modal').style.display = 'flex';
 
     setTimeout(() => {
+        const kanCtx = document.getElementById('kannikaChart').getContext('2d');
+        const ruangCtx = document.getElementById('ruangsiriChart').getContext('2d');
+        
+        // สร้างสี Gradient ชุดเดิมสำหรับโดนัทรายบุคคล
+        const dGrad1 = createGradient(kanCtx, '#34d399', '#047857'); 
+        const dGrad2 = createGradient(kanCtx, '#fbbf24', '#b45309'); 
+        const dGrad3 = createGradient(kanCtx, '#38bdf8', '#0369a1'); 
+        const donutGradients = [dGrad1, dGrad2, dGrad3];
+
         if (kannikaChartInstance) kannikaChartInstance.destroy();
-        kannikaChartInstance = new Chart(document.getElementById('kannikaChart'), { 
+        kannikaChartInstance = new Chart(kanCtx, { 
             type: 'doughnut', 
-            data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: donutColors, borderWidth: 2 }] }, 
-            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', formatter: donutFormatter } } } 
+            data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
+            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } } } 
         });
         
         if (ruangsiriChartInstance) ruangsiriChartInstance.destroy();
-        ruangsiriChartInstance = new Chart(document.getElementById('ruangsiriChart'), { 
+        ruangsiriChartInstance = new Chart(ruangCtx, { 
             type: 'doughnut', 
-            data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: donutColors, borderWidth: 2 }] }, 
-            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', formatter: donutFormatter } } } 
+            data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
+            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } } } 
         });
     }, 100);
 }
@@ -287,30 +319,24 @@ function loadScoreHistory() {
     .then(res => {
         if(res.result === 'success') {
             let html = '';
-            
-            // 1. นำข้อมูลมากลับด้าน (ใหม่สุดอยู่บน)
             const reversedData = res.data.reverse();
-            
-            // 2. ใช้ Set ในการช่วยกรอง (จับกลุ่ม) เอาเฉพาะอันล่าสุดของแต่ละคน+วิชา
             const uniqueHistory = [];
             const seen = new Set();
             
             reversedData.forEach(h => {
-                // สร้าง Key สำหรับตรวจสอบการซ้ำกัน เช่น "กรรณิกา_ISUZU my-MEMBER"
                 let key = h.name + "_" + h.topic; 
-                
-                // ถ้าระบบยังไม่เคยจำ Key นี้ แปลว่าเป็นข้อมูลรอบล่าสุด ให้เก็บไว้เลย
                 if(!seen.has(key)) {
                     seen.add(key);
                     uniqueHistory.push(h);
                 }
             });
 
-            // 3. นำข้อมูลที่กรองจนเหลือแค่การ์ดเดียวต่อคนมาลูปสร้างหน้าตา
             uniqueHistory.slice(0, 10).forEach(h => {
-                html += `<div class="history-item">
-                    <div><b>${h.name}</b><br><span style="color:#555; font-size: 13px;">${h.topic}</span><br><small style="color:#999;">${new Date(h.date).toLocaleDateString('th-TH')}</small></div>
-                    <div style="text-align:right">คะแนน: <b style="color:#1b5e20; font-size: 18px;">${h.score}/${h.full}</b><br><span style="font-size: 12px; color:#666;">รอบที่สอบ: ${h.attempt}</span></div>
+                let scoreClass = (h.score/h.full >= 0.8) ? '#10b981' : (h.score/h.full >= 0.5 ? '#f59e0b' : '#ef4444');
+                html += `
+                <div class="history-item" style="border-left: 4px solid ${scoreClass}; background:#fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div><b style="color:#1e293b; font-size: 15px;">${h.name}</b><br><span style="color:#64748b; font-size: 13px;">${h.topic}</span><br><small style="color:#94a3b8;">${new Date(h.date).toLocaleDateString('th-TH')}</small></div>
+                    <div style="text-align:right; font-size:13px; color:#475569;">คะแนน: <b style="color:${scoreClass}; font-size: 20px;">${h.score}/${h.full}</b><br><span style="font-size: 11px;">รอบที่สอบ: ${h.attempt}</span></div>
                 </div>`;
             });
             document.getElementById('score-history-container').innerHTML = html || '<p style="text-align:center; color:#999; padding: 20px;">ยังไม่มีประวัติการทำแบบทดสอบในระบบ</p>';
@@ -355,14 +381,11 @@ function showQuestion() {
     const q = currentQuestions[currentQuestionIndex];
     document.getElementById('quiz_step').innerText = `ข้อที่ ${currentQuestionIndex + 1} จาก ${currentQuestions.length}`;
     
-    // ซ่อนกล่องคำอธิบายรวม (ถ้ามี) และปุ่มข้อถัดไป
     document.getElementById('explanation_box').style.display = 'none';
     document.getElementById('next-q-btn').style.display = 'none';
     
-    // แสดงคำถาม
     document.getElementById('q_text').innerText = `${currentQuestionIndex + 1}. ${q.q}`;
     
-    // สร้างตัวเลือก A, B, C, D พร้อมซ่อนคำอธิบายของแต่ละตัวเลือกไว้
     let optionsHtml = '';
     const choices = [
         { id: 'A', text: q.a, explain: q.expA },
@@ -375,7 +398,7 @@ function showQuestion() {
         optionsHtml += `
         <div class="quiz-opt-container" id="container-${choice.id}">
             <div class="quiz-opt-header" onclick="checkAnswer('${choice.id}')">
-                <span style="background:#eee; padding:5px 10px; border-radius:5px; font-weight:bold; color:#333;">${choice.id}</span>
+                <span style="background:#f1f5f9; padding:5px 10px; border-radius:5px; font-weight:bold; color:#475569;">${choice.id}</span>
                 ${choice.text}
             </div>
             <div class="opt-explain" id="explain-${choice.id}">
@@ -391,11 +414,9 @@ function checkAnswer(userAns) {
     const q = currentQuestions[currentQuestionIndex];
     const containers = document.querySelectorAll('.quiz-opt-container');
     
-    // ล็อกทุกตัวเลือกไม่ให้คลิกซ้ำได้
     containers.forEach(c => c.classList.add('locked')); 
     userAnswers[currentQuestionIndex] = userAns;
 
-    // ตรวจถูกผิด
     if (userAns === q.correct) {
         document.getElementById(`container-${userAns}`).classList.add('correct');
         score++;
@@ -406,19 +427,16 @@ function checkAnswer(userAns) {
         }
     }
 
-    // 💡 หัวใจสำคัญ: สั่งเปิดคำอธิบายของทุกตัวเลือกออกมาให้เห็น (Slide Down)
     document.getElementById('explain-A').style.display = 'block';
     document.getElementById('explain-B').style.display = 'block';
     document.getElementById('explain-C').style.display = 'block';
     document.getElementById('explain-D').style.display = 'block';
 
-    // ถ้ามีคำอธิบายรวม (Summary) ในคอลัมน์ L ให้แสดงด้วย
     if(q.expSummary) {
         document.getElementById('explanation_text').innerText = q.expSummary;
         document.getElementById('explanation_box').style.display = 'block';
     }
     
-    // แสดงปุ่มไปต่อ
     document.getElementById('next-q-btn').style.display = 'block';
     if(currentQuestionIndex === currentQuestions.length - 1) {
         document.getElementById('next-q-btn').innerHTML = 'ส่งคำตอบประเมินผล <i class="fas fa-paper-plane"></i>';
@@ -440,7 +458,7 @@ function finishQuiz() {
     const payload = {
         action: 'save_quiz_score',
         cr_name: document.getElementById('quiz_user_name').value,
-        quiz_title: document.getElementById('current_quiz_title').innerText.trim(), // ตัดช่องว่าง
+        quiz_title: document.getElementById('current_quiz_title').innerText.trim(), 
         score: score,
         full_score: currentQuestions.length
     };
@@ -455,7 +473,7 @@ function finishQuiz() {
         document.getElementById('quiz-result').style.display = 'block';
         
         const pct = (score / currentQuestions.length) * 100;
-        document.getElementById('result-icon').innerHTML = pct >= 80 ? '🏆' : (pct >= 50 ? '💪' : '📚');
+        document.getElementById('result-icon').innerHTML = pct >= 80 ? '<i class="fas fa-trophy" style="color:#f59e0b;"></i>' : (pct >= 50 ? '<i class="fas fa-thumbs-up" style="color:#0ea5e9;"></i>' : '<i class="fas fa-book" style="color:#64748b;"></i>');
         document.getElementById('result-score-text').innerText = `คุณทำได้ ${score} / ${currentQuestions.length} คะแนน`;
         document.getElementById('result-attempt-text').innerText = `(บันทึกเป็นความพยายามการสอบครั้งที่ ${res.attempt})`;
     })
