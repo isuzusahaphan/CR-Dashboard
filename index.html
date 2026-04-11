@@ -10,6 +10,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
     <header>
@@ -165,15 +168,14 @@
                     </div>
                     
                     <div id="question_box" class="quiz-card">
-    <div id="q_text" class="quiz-q-text"></div>
-    
-    <div id="options_container" class="quiz-options-wrapper"></div>
-    
-    <div id="explanation_box" class="explanation-card">
-        <div class="explain-header">💡 คำอธิบายเพิ่มเติม</div>
-        <div id="explanation_text" class="explain-body"></div>
-    </div>
-</div>
+                        <div id="q_text" class="quiz-q-text"></div>
+                        <div id="options_container" class="quiz-options-wrapper"></div>
+                        
+                        <div id="explanation_box" class="explanation-card">
+                            <div class="explain-header">💡 คำอธิบายเพิ่มเติม</div>
+                            <div id="explanation_text" class="explain-body"></div>
+                        </div>
+                    </div>
 
                     <button id="next-q-btn" class="btn-submit" onclick="nextQuestion()" style="display:none; background: linear-gradient(135deg, #fb8c00, #f57c00); margin-top: 20px;">
                         ข้อถัดไป <i class="fas fa-arrow-right"></i>
@@ -285,11 +287,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="loading-overlay" class="overlay" style="display: none;">
-        <div class="spinner"></div>
-        <p style="color: white; font-weight: bold; margin-top: 15px; font-size: 16px;">กำลังเชื่อมต่อฐานข้อมูลศูนย์บัญชาการ...</p>
     </div>
 
     <script src="script.js"></script>
