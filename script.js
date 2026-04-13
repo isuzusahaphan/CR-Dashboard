@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(document.getElementById('admin_month').querySelector(`option[value="${mm}"]`)) document.getElementById('admin_month').value = mm;
     if(document.getElementById('admin_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('admin_year').value = yyyy;
 
-    // 🌟 [เพิ่มใหม่] เซ็ตค่า Default ให้ตัวกรอง "ตารางประวัติงาน" 🌟
+    // เซ็ตค่า Default ให้ตัวกรอง "ตารางประวัติงาน"
     if(document.getElementById('filter_record_month') && document.getElementById('filter_record_month').querySelector(`option[value="${mm}"]`)) {
         document.getElementById('filter_record_month').value = mm;
     }
@@ -105,7 +105,7 @@ async function openAdminTab() {
 }
 
 // ==========================================
-// 🌟 แท็บ 1: กระดานแสดงผล (Dashboard) - ระบบ 3 มิติ
+// 🌟 แท็บ 1: กระดานแสดงผล (Dashboard) - ระบบ 3 มิติ และ Extra Leads
 // ==========================================
 const donutFormatter = (value, ctx) => {
     if(value === 0) return '';
@@ -150,6 +150,7 @@ function loadDashboard() {
             let totalLeadsInHand = 0; 
             let totalTracked = 0;     
 
+            // 1. รวมยอดจาก CSV ตรีเพชร (15 กลุ่ม)
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
                     totalLeadsInHand += item.target; 
@@ -157,21 +158,29 @@ function loadDashboard() {
                 });
             }
 
-            // --- 1. มิติ ฐานข้อมูล (Leads) ---
+            // 2. รวมยอดจาก "รายชื่อเสริม" (Extra Leads สีเขียว) ที่เพิ่มเข้ามาใหม่
+            if (d.extraLeads && d.extraLeads.length > 0) {
+                d.extraLeads.forEach(item => {
+                    totalLeadsInHand += item.target; 
+                    totalTracked += item.tracked;
+                });
+            }
+
+            // --- มิติ 1 ฐานข้อมูล (Leads) ---
             let leadPct = Math.round((totalLeadsInHand / targetLeads) * 100);
             if (leadPct > 100) leadPct = 100;
             document.getElementById('label_lead_percent').innerText = leadPct + '%';
             document.getElementById('bar_lead_flow').style.width = leadPct + '%';
             document.getElementById('text_lead_total').innerText = `มีรายชื่อในมือ: ${totalLeadsInHand.toLocaleString()} / 1,057 รายการ`;
 
-            // --- 2. มิติ ความพยายาม (Effort/Action) ---
+            // --- มิติ 2 ความพยายาม (Effort/Action) ---
             let effortPct = totalLeadsInHand > 0 ? Math.round((totalTracked / totalLeadsInHand) * 100) : 0;
             if (effortPct > 100) effortPct = 100;
             document.getElementById('label_effort_percent').innerText = effortPct + '%';
             document.getElementById('bar_effort_flow').style.width = effortPct + '%';
             document.getElementById('text_effort_total').innerText = `โทรแล้ว: ${totalTracked.toLocaleString()} / ${totalLeadsInHand.toLocaleString()} รายการ`;
 
-            // --- 3. มิติ ผลลัพธ์สุทธิ (Outcome/Result) ---
+            // --- มิติ 3 ผลลัพธ์สุทธิ (Outcome/Result) ---
             let outcomePct = Math.round((d.current / targetOutcome) * 100);
             if (outcomePct > 100) outcomePct = 100;
             document.getElementById('label_outcome_percent').innerText = outcomePct + '%';
@@ -196,6 +205,7 @@ function loadDashboard() {
             }
             document.getElementById('dash_motivation').innerHTML = motivationText;
 
+            // อัปเดตข้อมูลจิปาถะ และกราฟต่างๆ
             document.getElementById('update_kannika').innerText = d.lastUpdateKannika;
             document.getElementById('update_ruangsiri').innerText = d.lastUpdateRuangsiri;
 
@@ -227,7 +237,7 @@ function loadDashboard() {
             typeChartInstance = new Chart(typeCtx, {
                 type: 'doughnut',
                 data: { 
-                    labels: ['ระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง ', 'ได้รับการแนะนำ'], 
+                    labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง ', 'ได้รับการแนะนำ'], 
                     datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] 
                 },
                 options: { 
@@ -239,9 +249,10 @@ function loadDashboard() {
                 }
             });
 
+            // 🌟 วาดการ์ด CSV แบบเก่า (สีฟ้า/เทา)
             if (d.csvData && d.csvData.length > 0) {
                 let lastUpdateBadge = d.csvLastUpdate && d.csvLastUpdate !== '-' ? `<span style="font-size: 12px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 12px; font-weight: normal; margin-left: 10px; border: 1px solid #bbdefb;"><i class="fas fa-history"></i> ล่าสุด: ${d.csvLastUpdate}</span>` : '';
-                let csvHtml = `<div style="grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; margin-top:20px; border-bottom:2px solid #bbdefb; padding-bottom:10px;"><h3 style="color:#0d47a1; margin: 0;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3>${lastUpdateBadge}</div>`;
+                let csvHtml = `<div style="grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; margin-bottom:10px;"><h3 style="color:#0d47a1; margin: 0;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3>${lastUpdateBadge}</div>`;
                 
                 d.csvData.forEach(item => {
                     const needToCall = item.tracked + item.untracked; 
@@ -268,8 +279,36 @@ function loadDashboard() {
                 });
                 document.getElementById('dash_csv_tracking').innerHTML = csvHtml;
             } else { 
-                document.getElementById('dash_csv_tracking').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:#777; padding: 40px; background: #fff; border: 1px dashed #ccc; border-radius: 10px;">⚠️ ผู้ดูแลระบบยังไม่ได้อัปโหลดฐานข้อมูลการติดตามลูกค้าในเดือนนี้</p>'; 
+                document.getElementById('dash_csv_tracking').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:#777; padding: 40px; background: #fff; border: 1px dashed #ccc; border-radius: 10px; margin-bottom:0;">⚠️ ผู้ดูแลระบบยังไม่ได้อัปโหลดฐานข้อมูลการติดตามลูกค้าในเดือนนี้</p>'; 
             }
+
+            // 🌟 วาดการ์ด Extra Leads ที่แอดมินเพิ่งเพิ่มเข้ามา (สีเขียว)
+            let extraCardsHtml = '';
+            if (d.extraLeads && d.extraLeads.length > 0) {
+                d.extraLeads.forEach(item => {
+                    const needToCall = item.tracked + item.untracked; 
+                    let actualPercent = needToCall === 0 ? 100 : Math.round((item.tracked / needToCall) * 100);
+                    extraCardsHtml += `
+                    <div class="csv-card" style="border: 2px solid #81c784; background: #f1f8e9;">
+                        <div class="csv-title" style="color: #2e7d32;"><i class="fas fa-link"></i> ${item.sheetName}</div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
+                            <span style="color:#555;">ความคืบหน้าการโทร</span><span style="color:#2e7d32; font-weight:bold;">${actualPercent}%</span>
+                        </div>
+                        <div style="width:100%; background:#c8e6c9; height:12px; border-radius:6px; overflow:hidden; margin-bottom:15px;">
+                            <div style="width:${actualPercent}%; background:linear-gradient(90deg, #388e3c, #81c784); height:100%; transition: width 1s;"></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#fff; padding:8px; border-radius:6px; margin-bottom:5px; border: 1px solid #e8f5e9;">
+                            <span>🎯 รายชื่อที่หามาเพิ่ม:</span><b style="color: #2e7d32;">${item.target} รายการ</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#fff; padding:8px; border-radius:6px; border: 1px solid #e8f5e9; margin-bottom: 5px;">
+                            <span>📞 สถานะการโทร:</span><span>โทรแล้ว <b style="color:#1565c0;">${item.tracked}</b> | ค้าง <b style="color:#d32f2f;">${item.untracked}</b></span>
+                        </div>
+                        <a href="${item.url}" target="_blank" style="display: block; text-align: center; font-size: 12px; color: #1565c0; text-decoration: none; margin-top: 5px;"><i class="fas fa-external-link-alt"></i> เปิดไฟล์ Google Sheet</a>
+                    </div>`;
+                });
+            }
+            // ยัดการ์ดสีเขียวลงไปก่อนปุ่ม +
+            document.getElementById('dash_extra_cards').innerHTML = extraCardsHtml;
         }
     })
     .catch(e => { 
@@ -321,7 +360,6 @@ function calculateTotal() {
     document.getElementById('type_total').value = tripetch + inbound + referral;
 }
 
-// 🔥 บันทึกข้อมูลงาน
 function saveRecord() {
     const crName = document.getElementById('cr_name').value;
     const recordDate = document.getElementById('record_date').value;
@@ -379,9 +417,7 @@ function saveRecord() {
     }
 }
 
-// 🌟 ระบบดึงข้อมูลและเตรียมกรอง
 function loadRecentRecords() {
-    // ใช้วิธีดึงเดือน/ปีจากกล่อง Filter ของตาราง (ถ้ายังไม่มีใน HTML ให้ดึงเดือนปัจจุบันไปก่อน)
     const mEl = document.getElementById('filter_record_month');
     const yEl = document.getElementById('filter_record_year');
     const month = mEl ? mEl.value : String(new Date().getMonth() + 1).padStart(2, '0');
@@ -394,7 +430,7 @@ function loadRecentRecords() {
     .then(res => {
         if(res.result === 'success') {
             recentRecordsList = res.data;
-            applyRecordFilters(); // เรียกฟังก์ชันกรองและวาดตาราง
+            applyRecordFilters(); 
         } else {
             document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">ไม่พบข้อมูลประวัติในระบบ</td></tr>';
             if (document.getElementById('recordPagination')) document.getElementById('recordPagination').innerHTML = '';
@@ -404,25 +440,21 @@ function loadRecentRecords() {
     });
 }
 
-// 🌟 ระบบคัดกรองข้อมูล (Filter & Sorting)
 function applyRecordFilters() {
     const crFilterEl = document.getElementById('filter_record_cr');
     const crFilter = crFilterEl ? crFilterEl.value : 'all';
 
-    // กรองชื่อพนักงาน
     filteredRecordsList = recentRecordsList.filter(rec => {
         if (crFilter !== 'all' && rec.cr_name !== crFilter) return false;
         return true;
     });
 
-    // เรียงลำดับ: วันที่ล่าสุด (Newest) ไปหาเก่าสุดเสมอ
     filteredRecordsList.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    currentRecordPage = 1; // เปลี่ยนฟิลเตอร์ให้เด้งกลับหน้า 1
+    currentRecordPage = 1; 
     renderRecentRecords();
 }
 
-// 🌟 ระบบวาดตาราง และ การแบ่งหน้า (Pagination)
 function renderRecentRecords() {
     const tbody = document.getElementById('recentRecordsTableBody');
     
@@ -432,7 +464,6 @@ function renderRecentRecords() {
         return;
     }
     
-    // คำนวณหน้าและหั่นข้อมูล
     const totalItems = filteredRecordsList.length;
     const totalPages = Math.ceil(totalItems / recordsPerPage) || 1;
     const startIndex = (currentRecordPage - 1) * recordsPerPage;
@@ -443,7 +474,7 @@ function renderRecentRecords() {
         let displayDate = rec.date;
         try {
             const parts = rec.date.split('T')[0].split('-');
-            if(parts.length === 3) displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`; // แปลงเป็น DD/MM/YYYY ให้ดูง่าย
+            if(parts.length === 3) displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`; 
         } catch(e) {}
 
         html += `
@@ -462,7 +493,6 @@ function renderRecentRecords() {
     });
     tbody.innerHTML = html;
 
-    // วาดปุ่ม Pagination
     const paginationContainer = document.getElementById('recordPagination');
     if (paginationContainer) {
         paginationContainer.innerHTML = `
@@ -475,13 +505,11 @@ function renderRecentRecords() {
     }
 }
 
-// 🌟 เปลี่ยนหน้าตาราง
 function changeRecordPage(direction) {
     currentRecordPage += direction;
     renderRecentRecords();
 }
 
-// 🌟 ระบบลบถาวร
 function deleteRecord(id) {
     Swal.fire({
         title: 'ยืนยันการลบประวัติ?',
@@ -509,14 +537,13 @@ function deleteRecord(id) {
     });
 }
 
-// 🌟 เปิดหน้าต่างแก้ไข
 function openEditRecordModal(id) {
     const rec = recentRecordsList.find(r => String(r.id) === String(id));
     if(!rec) return;
     
     document.getElementById('edit_record_id').value = rec.id;
     document.getElementById('edit_cr_name').value = rec.cr_name;
-    document.getElementById('edit_record_date').value = rec.date.split('T')[0]; // Format YYYY-MM-DD
+    document.getElementById('edit_record_date').value = rec.date.split('T')[0]; 
     document.getElementById('edit_type_tripetch').value = rec.tripetch;
     document.getElementById('edit_type_inbound').value = rec.inbound;
     document.getElementById('edit_type_referral').value = rec.referral;
@@ -536,7 +563,6 @@ function calculateEditTotal() {
     document.getElementById('edit_type_total').value = tripetch + inbound + referral;
 }
 
-// 🌟 บันทึกการแก้ไข
 function saveEditRecord() {
     const id = document.getElementById('edit_record_id').value;
     const crName = document.getElementById('edit_cr_name').value;
@@ -570,7 +596,7 @@ function saveEditRecord() {
 }
 
 // ==========================================
-// 🎓 แท็บ 3: ศูนย์ฝึกอบรมและประเมินผล (Training Quiz)
+// 🌟 แท็บ 3: ศูนย์ฝึกอบรมและประเมินผล (Training Quiz)
 // ==========================================
 function loadQuizTopics() {
     fetch(`${API_URL}?action=get_quiz_list`)
@@ -612,7 +638,6 @@ function loadScoreHistory() {
     });
 }
 
-// 🔥 อัปเกรด Alert การเริ่มสอบ
 function prepareQuiz() {
     const topic = document.getElementById('quiz_topic_list').value;
     const name = document.getElementById('quiz_user_name').value;
@@ -722,7 +747,6 @@ function nextQuestion() {
     }
 }
 
-// 🔥 อัปเกรดตอนประเมินผลคะแนน
 function finishQuiz() {
     showLoading('กำลังประมวลผลคะแนน...');
     
@@ -746,7 +770,6 @@ function finishQuiz() {
         
         if (pct >= 80) {
            iconHtml = '<i class="fas fa-trophy" style="color:#f59e0b;"></i>';
-           // 🔥 ยิงพลุฉลองคนเก่ง! 🔥
            confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, zIndex: 3000 });
         } else if (pct >= 50) {
            iconHtml = '<i class="fas fa-thumbs-up" style="color:#0ea5e9;"></i>';
@@ -860,7 +883,7 @@ function loadPromotions() {
 }
 
 // ==========================================
-// 🌟 แท็บ 6: ผู้ดูแลระบบ (Admin)
+// 🌟 แท็บ 6: ผู้ดูแลระบบ (Admin) & ฟีเจอร์เสริม (Extra Leads)
 // ==========================================
 function uploadCSV() {
     const fileInput = document.getElementById('csv_file');
@@ -896,5 +919,58 @@ function uploadCSV() {
                 Swal.fire({ icon: 'error', title: 'เครือข่ายขัดข้อง', text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ', confirmButtonColor: '#d33' });
             });
         }
+    });
+}
+
+// 🌟 ฟังก์ชันจัดการ Extra Leads (ฐานข้อมูลเสริม) 🌟
+function openExtraLeadModal() {
+    document.getElementById('extraLeadModal').style.display = 'flex';
+}
+
+function closeExtraLeadModal() {
+    document.getElementById('extraLeadModal').style.display = 'none';
+}
+
+function saveExtraLead() {
+    const url = document.getElementById('extra_sheet_url').value;
+    const sheetName = document.getElementById('extra_sheet_name').value;
+    const month = document.getElementById('dash_month').value; 
+    const year = document.getElementById('dash_year').value;
+
+    if (!url || !sheetName) {
+        return Swal.fire({ icon: 'warning', text: 'กรุณากรอกลิงก์และชื่อแท็บให้ครบถ้วน' });
+    }
+
+    showLoading('กำลังดึงข้อมูลจาก Google Sheet...');
+
+    const payload = {
+        action: 'save_extra_lead',
+        month: month,
+        year: year,
+        url: url.trim(),
+        sheetName: sheetName.trim()
+    };
+
+    fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+    .then(r => r.json())
+    .then(res => {
+        Swal.close();
+        if(res.result === 'success') {
+            Swal.fire({ 
+                icon: 'success', 
+                title: 'เชื่อมโยงสำเร็จ!', 
+                text: `ดึงมาได้ ${res.data.target} รายการ (โทรแล้ว ${res.data.tracked} / ค้าง ${res.data.untracked})`,
+                confirmButtonColor: '#1565c0' 
+            });
+            document.getElementById('extra_sheet_url').value = '';
+            document.getElementById('extra_sheet_name').value = '';
+            closeExtraLeadModal();
+            loadDashboard(); // รีเฟรชแดชบอร์ดเพื่อให้การ์ดสีเขียวขึ้น
+        } else {
+            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: res.message });
+        }
+    }).catch(e => {
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'ขัดข้อง', text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้' });
     });
 }
