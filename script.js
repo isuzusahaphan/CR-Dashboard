@@ -39,10 +39,21 @@ document.addEventListener("DOMContentLoaded", () => {
     let mm = String(today.getMonth() + 1).padStart(2, '0');
     let yyyy = String(today.getFullYear());
     
+    // เซ็ตค่า Default ให้หน้า Dashboard
     if(document.getElementById('dash_month').querySelector(`option[value="${mm}"]`)) document.getElementById('dash_month').value = mm;
     if(document.getElementById('dash_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('dash_year').value = yyyy;
+    
+    // เซ็ตค่า Default ให้หน้า Admin
     if(document.getElementById('admin_month').querySelector(`option[value="${mm}"]`)) document.getElementById('admin_month').value = mm;
     if(document.getElementById('admin_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('admin_year').value = yyyy;
+
+    // 🌟 [เพิ่มใหม่] เซ็ตค่า Default ให้ตัวกรอง "ตารางประวัติงาน" 🌟
+    if(document.getElementById('filter_record_month') && document.getElementById('filter_record_month').querySelector(`option[value="${mm}"]`)) {
+        document.getElementById('filter_record_month').value = mm;
+    }
+    if(document.getElementById('filter_record_year') && document.getElementById('filter_record_year').querySelector(`option[value="${yyyy}"]`)) {
+        document.getElementById('filter_record_year').value = yyyy;
+    }
 
     const savedCR = localStorage.getItem('cr_hub_name');
     if (savedCR) {
@@ -51,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     loadDashboard();
-    loadRecentRecords(); // 🌟 โหลดประวัติงานตอนเปิดเว็บ
+    loadRecentRecords(); 
 });
 
 // ==========================================
