@@ -148,6 +148,17 @@
                     </div>
                     
                     <div id="dash_csv_tracking"></div>
+
+                    <div id="extra_leads_wrapper" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 20px;">
+                        <div id="dash_extra_cards" style="display: contents;"></div>
+
+                        <div class="csv-card" style="border: 2px dashed #4caf50; background: #f1f8e9; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; min-height: 200px; transition: 0.2s;" onclick="openExtraLeadModal()" onmouseover="this.style.background='#e8f5e9'; this.style.transform='translateY(-3px)';" onmouseout="this.style.background='#f1f8e9'; this.style.transform='translateY(0)';">
+                            <i class="fas fa-plus-circle" style="font-size: 40px; color: #2e7d32; margin-bottom: 15px;"></i>
+                            <h4 style="color: #1b5e20; margin: 0;">เพิ่มฐานข้อมูลเสริม</h4>
+                            <p style="font-size: 13px; color: #555; margin-top: 8px;">เชื่อมโยง Google Sheet (Track อัตโนมัติ)</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -227,7 +238,7 @@
                                     <th>พนักงาน (CR)</th>
                                     <th>ตรีเพชร</th>
                                     <th>Inbound</th>
-                                    <th>Walk-in/แนะนำ</th>
+                                    <th>แนะนำ</th>
                                     <th>ยอดรวม</th>
                                     <th>จัดการ</th>
                                 </tr>
@@ -444,6 +455,36 @@
             
             <button id="btnSaveEditRecord" class="btn-submit" onclick="saveEditRecord()" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
                 💾 บันทึกการแก้ไข
+            </button>
+        </div>
+    </div>
+
+    <div id="extraLeadModal" class="modal" style="display: none; z-index: 1300;">
+        <div class="modal-content" style="max-width: 550px;">
+            <span class="close-modal" onclick="closeExtraLeadModal()" data-tooltip="ปิดหน้าต่าง">&times;</span>
+            <h2 style="color: #1b5e20; border-bottom: 2px solid #c8e6c9; padding-bottom: 10px; margin-top:0;">
+                <i class="fas fa-link" style="color:#2e7d32;"></i> เชื่อมโยงฐานข้อมูลเสริม
+            </h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">
+                ระบบจะทำการนับยอดการติดตามอัตโนมัติ จากคอลัมน์ <b>K</b> (ผลการติดต่อ)
+            </p>
+
+            <div class="form-group">
+                <label>🔗 ลิงก์ Google Sheet (URL)</label>
+                <input type="text" id="extra_sheet_url" placeholder="https://docs.google.com/spreadsheets/d/1xxxx/edit...">
+            </div>
+            
+            <div class="form-group">
+                <label>📑 ชื่อแท็บ (Sheet Name)</label>
+                <input type="text" id="extra_sheet_name" placeholder="เช่น 1 เม.ย.67-30 ก.ค.67">
+            </div>
+
+            <div style="background: #fff3cd; padding: 10px 15px; border-left: 4px solid #ffb300; font-size: 13px; color: #555; border-radius: 4px; margin-bottom: 20px;">
+                ⚠️ <b>คำแนะนำ:</b> โปรดตรวจสอบให้แน่ใจว่า Google Sheet ของคุณเปิดสิทธิ์การแชร์เป็น "ทุกคนที่มีลิงก์" (Anyone with the link) หรือแชร์สิทธิ์ให้กับอีเมลของแอดมินแล้ว
+            </div>
+
+            <button id="btnSaveExtraLead" class="btn-submit" onclick="saveExtraLead()" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+                <i class="fas fa-save"></i> บันทึกและดึงข้อมูล
             </button>
         </div>
     </div>
