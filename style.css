@@ -270,6 +270,10 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666; transition: 0.2s;}
 .close-modal:hover { color: #000; transform: scale(1.1); }
 
+/* 🌟 [ใหม่] สไตล์ของ Filter ในตารางประวัติ 🌟 */
+.form-control { border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333; outline: none; }
+.form-control:focus { border-color: #1565c0; box-shadow: 0 0 3px rgba(21,101,192,0.3); }
+
 /* 📱 Responsive 📱 */
 @media (max-width: 768px) {
     header { padding: 10px 15px; }
