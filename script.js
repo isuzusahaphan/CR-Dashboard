@@ -9,7 +9,12 @@ let ruangsiriChartInstance = null;
 let currentDashboardData = null; 
 
 let allReportsList = [];
-let recentRecordsList = []; // 🌟 เก็บประวัติการบันทึกงานล่าสุด
+
+// 🌟 ตัวแปรสำหรับระบบจัดการประวัติงาน 🌟
+let recentRecordsList = []; // เก็บประวัติการบันทึกงานดิบทั้งหมดจาก API
+let filteredRecordsList = []; // เก็บประวัติที่ผ่านการกรองแล้ว
+let currentRecordPage = 1; // หน้าปัจจุบันของตารางประวัติ
+const recordsPerPage = 10; // แสดงหน้าละ 10 รายการ
 
 // ตัวแปรสำหรับระบบศูนย์ฝึกอบรม (Training Quiz)
 let currentQuestions = [];
@@ -61,7 +66,7 @@ function switchTab(evt, tabId) {
     if (tabId === 'tab-promo') loadPromotions();
     if (tabId === 'tab-reports') loadReports();
     if (tabId === 'tab-dashboard') loadDashboard();
-    if (tabId === 'tab-input') loadRecentRecords(); // 🌟 โหลดประวัติงานอัปเดตใหม่เมื่อเข้าแท็บ
+    if (tabId === 'tab-input') loadRecentRecords(); // โหลดประวัติงานอัปเดตใหม่เมื่อเข้าแท็บ
     if (tabId === 'tab-training') { loadQuizTopics(); loadScoreHistory(); }
 }
 
@@ -89,7 +94,7 @@ async function openAdminTab() {
 }
 
 // ==========================================
-// 🌟 แท็บ 1: กระดานแสดงผล (Dashboard) - 🌟 อัปเกรดระบบ 3 มิติ
+// 🌟 แท็บ 1: กระดานแสดงผล (Dashboard) - ระบบ 3 มิติ
 // ==========================================
 const donutFormatter = (value, ctx) => {
     if(value === 0) return '';
@@ -106,7 +111,7 @@ function createGradient(ctx, colorStart, colorEnd) {
     return gradient;
 }
 
-let hasCelebratedCR100 = false; // ป้องกันพลุยิงซ้ำซาก
+let hasCelebratedCR100 = false; 
 
 function loadDashboard() {
     const month = document.getElementById('dash_month').value; 
@@ -127,19 +132,17 @@ function loadDashboard() {
             const d = res.data;
             currentDashboardData = d; 
 
-            // ==========================================
             // 🎯 การคำนวณ Dashboard 3 มิติ (Leading Indicator)
-            // ==========================================
-            const targetOutcome = 317; // เป้าหมายรถเข้า
-            const targetLeads = 1057;  // เป้าหมายการหา Data (มาจาก 317/30%)
+            const targetOutcome = 317; 
+            const targetLeads = 1057;  
             
-            let totalLeadsInHand = 0; // ผลรวมเป้าหมายใน CSV
-            let totalTracked = 0;     // ผลรวมที่โทรแล้วใน CSV
+            let totalLeadsInHand = 0; 
+            let totalTracked = 0;     
 
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
-                    totalLeadsInHand += item.target; // รวมรายชื่อ 15 กลุ่ม
-                    totalTracked += item.tracked;    // รวมจำนวนที่โทรติดตามแล้ว
+                    totalLeadsInHand += item.target; 
+                    totalTracked += item.tracked;    
                 });
             }
 
@@ -182,9 +185,6 @@ function loadDashboard() {
             }
             document.getElementById('dash_motivation').innerHTML = motivationText;
 
-            // ==========================================
-            // อัปเดตข้อมูลจิปาถะ และกราฟต่างๆ
-            // ==========================================
             document.getElementById('update_kannika').innerText = d.lastUpdateKannika;
             document.getElementById('update_ruangsiri').innerText = d.lastUpdateRuangsiri;
 
@@ -216,7 +216,7 @@ function loadDashboard() {
             typeChartInstance = new Chart(typeCtx, {
                 type: 'doughnut',
                 data: { 
-                    labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง', 'ได้รับการแนะนำำ'], 
+                    labels: ['ระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง ', 'ได้รับการแนะนำ'], 
                     datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] 
                 },
                 options: { 
@@ -283,14 +283,14 @@ function openBreakdownModal() {
         if (kannikaChartInstance) kannikaChartInstance.destroy();
         kannikaChartInstance = new Chart(kanCtx, { 
             type: 'doughnut', 
-            data: { labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง', 'ได้รับการแนะนำ'], datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
+            data: { labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง ', 'ได้รับการแนะนำ'], datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
             options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } } } 
         });
         
         if (ruangsiriChartInstance) ruangsiriChartInstance.destroy();
         ruangsiriChartInstance = new Chart(ruangCtx, { 
             type: 'doughnut', 
-            data: { labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง', 'ได้รับการแนะนำ'], datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
+            data: { labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง ', 'ได้รับการแนะนำ'], datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
             options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } } } 
         });
     }, 100);
@@ -301,7 +301,7 @@ function closeBreakdownModal() {
 }
 
 // ==========================================
-// 🌟 แท็บ 2: บันทึกข้อมูล และ การจัดการประวัติ (Edit/Delete)
+// 🌟 แท็บ 2: บันทึกข้อมูล และ การจัดการประวัติ (Edit/Delete/Filter/Pagination)
 // ==========================================
 function calculateTotal() {
     const tripetch = parseInt(document.getElementById('type_tripetch').value) || 0;
@@ -341,7 +341,6 @@ function saveRecord() {
                 document.getElementById('type_referral').value = 0; 
                 calculateTotal(); 
                 
-                // โหลดประวัติและแดชบอร์ดใหม่เพื่ออัปเดตข้อมูลทันที
                 loadRecentRecords();
                 loadDashboard();
             }
@@ -369,10 +368,13 @@ function saveRecord() {
     }
 }
 
-// 🌟 ระบบจัดการประวัติ: ดึงข้อมูล
+// 🌟 ระบบดึงข้อมูลและเตรียมกรอง
 function loadRecentRecords() {
-    const month = document.getElementById('dash_month').value || String(new Date().getMonth() + 1).padStart(2, '0');
-    const year = document.getElementById('dash_year').value || new Date().getFullYear();
+    // ใช้วิธีดึงเดือน/ปีจากกล่อง Filter ของตาราง (ถ้ายังไม่มีใน HTML ให้ดึงเดือนปัจจุบันไปก่อน)
+    const mEl = document.getElementById('filter_record_month');
+    const yEl = document.getElementById('filter_record_year');
+    const month = mEl ? mEl.value : String(new Date().getMonth() + 1).padStart(2, '0');
+    const year = yEl ? yEl.value : new Date().getFullYear();
     
     document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;"><div class="spinner-small"></div> กำลังโหลดข้อมูลประวัติ...</td></tr>';
     
@@ -381,25 +383,52 @@ function loadRecentRecords() {
     .then(res => {
         if(res.result === 'success') {
             recentRecordsList = res.data;
-            renderRecentRecords();
+            applyRecordFilters(); // เรียกฟังก์ชันกรองและวาดตาราง
         } else {
             document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">ไม่พบข้อมูลประวัติในระบบ</td></tr>';
+            if (document.getElementById('recordPagination')) document.getElementById('recordPagination').innerHTML = '';
         }
     }).catch(e => {
         document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #d32f2f;">เครือข่ายขัดข้อง โหลดข้อมูลประวัติล้มเหลว</td></tr>';
     });
 }
 
-// 🌟 ระบบจัดการประวัติ: วาดตาราง
+// 🌟 ระบบคัดกรองข้อมูล (Filter & Sorting)
+function applyRecordFilters() {
+    const crFilterEl = document.getElementById('filter_record_cr');
+    const crFilter = crFilterEl ? crFilterEl.value : 'all';
+
+    // กรองชื่อพนักงาน
+    filteredRecordsList = recentRecordsList.filter(rec => {
+        if (crFilter !== 'all' && rec.cr_name !== crFilter) return false;
+        return true;
+    });
+
+    // เรียงลำดับ: วันที่ล่าสุด (Newest) ไปหาเก่าสุดเสมอ
+    filteredRecordsList.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    currentRecordPage = 1; // เปลี่ยนฟิลเตอร์ให้เด้งกลับหน้า 1
+    renderRecentRecords();
+}
+
+// 🌟 ระบบวาดตาราง และ การแบ่งหน้า (Pagination)
 function renderRecentRecords() {
     const tbody = document.getElementById('recentRecordsTableBody');
-    if(recentRecordsList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">ยังไม่มีประวัติการบันทึกงานในเดือนนี้</td></tr>';
+    
+    if(filteredRecordsList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">ไม่พบประวัติการบันทึกงานตามเงื่อนไขที่เลือก</td></tr>';
+        if (document.getElementById('recordPagination')) document.getElementById('recordPagination').innerHTML = '';
         return;
     }
     
+    // คำนวณหน้าและหั่นข้อมูล
+    const totalItems = filteredRecordsList.length;
+    const totalPages = Math.ceil(totalItems / recordsPerPage) || 1;
+    const startIndex = (currentRecordPage - 1) * recordsPerPage;
+    const pageData = filteredRecordsList.slice(startIndex, startIndex + recordsPerPage);
+    
     let html = '';
-    recentRecordsList.forEach(rec => {
+    pageData.forEach(rec => {
         let displayDate = rec.date;
         try {
             const parts = rec.date.split('T')[0].split('-');
@@ -421,9 +450,27 @@ function renderRecentRecords() {
         </tr>`;
     });
     tbody.innerHTML = html;
+
+    // วาดปุ่ม Pagination
+    const paginationContainer = document.getElementById('recordPagination');
+    if (paginationContainer) {
+        paginationContainer.innerHTML = `
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px;">
+                <button class="btn-sm" style="padding: 8px 12px; border-radius: 6px;" ${currentRecordPage === 1 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''} onclick="changeRecordPage(-1)">◀ ก่อนหน้า</button>
+                <span style="font-weight:bold; font-size:14px; margin: 0 5px; color: #555;">หน้า ${currentRecordPage} / ${totalPages}</span>
+                <button class="btn-sm" style="padding: 8px 12px; border-radius: 6px;" ${currentRecordPage === totalPages ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''} onclick="changeRecordPage(1)">ถัดไป ▶</button>
+            </div>
+        `;
+    }
 }
 
-// 🌟 ระบบจัดการประวัติ: ลบถาวร
+// 🌟 เปลี่ยนหน้าตาราง
+function changeRecordPage(direction) {
+    currentRecordPage += direction;
+    renderRecentRecords();
+}
+
+// 🌟 ระบบลบถาวร
 function deleteRecord(id) {
     Swal.fire({
         title: 'ยืนยันการลบประวัติ?',
@@ -451,13 +498,12 @@ function deleteRecord(id) {
     });
 }
 
-// 🌟 ระบบจัดการประวัติ: เปิดหน้าต่างแก้ไข
+// 🌟 เปิดหน้าต่างแก้ไข
 function openEditRecordModal(id) {
     const rec = recentRecordsList.find(r => String(r.id) === String(id));
     if(!rec) return;
     
     document.getElementById('edit_record_id').value = rec.id;
-    document.getElementById('edit_record_row').value = rec.row; 
     document.getElementById('edit_cr_name').value = rec.cr_name;
     document.getElementById('edit_record_date').value = rec.date.split('T')[0]; // Format YYYY-MM-DD
     document.getElementById('edit_type_tripetch').value = rec.tripetch;
@@ -479,10 +525,9 @@ function calculateEditTotal() {
     document.getElementById('edit_type_total').value = tripetch + inbound + referral;
 }
 
-// 🌟 ระบบจัดการประวัติ: บันทึกการแก้ไข
+// 🌟 บันทึกการแก้ไข
 function saveEditRecord() {
     const id = document.getElementById('edit_record_id').value;
-    const row = document.getElementById('edit_record_row').value;
     const crName = document.getElementById('edit_cr_name').value;
     const date = document.getElementById('edit_record_date').value;
     const tp = parseInt(document.getElementById('edit_type_tripetch').value) || 0;
@@ -496,7 +541,7 @@ function saveEditRecord() {
     fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({
-            action: 'edit_record', id: id, row: row, cr_name: crName, date: date, 
+            action: 'edit_record', id: id, cr_name: crName, date: date, 
             tripetch: tp, inbound: ib, referral: rf, total: tot
         })
     })
@@ -806,7 +851,6 @@ function loadPromotions() {
 // ==========================================
 // 🌟 แท็บ 6: ผู้ดูแลระบบ (Admin)
 // ==========================================
-// 🔥 อัปเกรด Alert อัปโหลดไฟล์ CSV
 function uploadCSV() {
     const fileInput = document.getElementById('csv_file');
     const file = fileInput.files[0];
