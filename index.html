@@ -13,6 +13,32 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* 🌟 สไตล์พิเศษสำหรับหน้า HTML นี้ 🌟 */
+        .premium-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .premium-table th { background: #f1f5f9; color: #475569; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        .premium-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        .premium-table tbody tr:hover { background: #f8fafc; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: white; margin-right: 4px; }
+        .btn-sm:hover { background: #f1f5f9; }
+        .btn-danger-sm { color: #b91c1c; border-color: #fca5a5; background: #fee2e2; }
+        .btn-danger-sm:hover { background: #fecaca; }
+        
+        /* สไตล์สำหรับกล่อง 3 มิติ */
+        .dashboard-summary-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; }
+        .summary-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .summary-label { display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-bottom: 10px; color: #333; }
+        .summary-footer { display: flex; justify-content: space-between; font-size: 13.5px; color: #555; margin-top: 8px; font-weight: 600; }
+        
+        .box-lead { border-left: 5px solid #f59e0b; }
+        .box-effort { border-left: 5px solid #3b82f6; }
+        .box-outcome { border-left: 5px solid #10b981; }
+
+        @media (min-width: 768px) {
+            .dashboard-summary-grid { grid-template-columns: 1fr 1fr 1fr; }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -54,20 +80,53 @@
                     </div>
                 </div>
 
-                <div class="progress-container">
-                    <div class="progress-labels">
-                        <span>เป้าหมายการติดตามประจำเดือน: <span id="dash_target" style="color:#1565c0;">0</span> คัน</span>
-                        <span>ยอดรถเข้ารับบริการจริง: <span id="dash_current" style="color:#2e7d32;">0</span> คัน</span>
+                <div class="dashboard-summary-grid">
+                    
+                    <div class="summary-box box-lead">
+                        <div class="summary-label">
+                            <span style="color: #d97706;"><i class="fas fa-database"></i> ฐานข้อมูล (Leads)</span>
+                            <span id="label_lead_percent" style="color: #d97706;">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="bar_lead_flow" style="background: linear-gradient(90deg, #fcd34d, #f59e0b); width: 0%;"></div>
+                        </div>
+                        <div class="summary-footer">
+                            <span id="text_lead_total">มีรายชื่อในมือ: 0 / 1,057 คัน</span>
+                        </div>
                     </div>
-                    <div class="progress-bar-bg" data-tooltip="ความคืบหน้าเทียบกับเป้าหมายรวมประจำเดือน">
-                        <div class="progress-bar-fill" id="dash_progress">0%</div>
+
+                    <div class="summary-box box-effort">
+                        <div class="summary-label">
+                            <span style="color: #1d4ed8;"><i class="fas fa-phone-alt"></i> การติดตาม (Action)</span>
+                            <span id="label_effort_percent" style="color: #1d4ed8;">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="bar_effort_flow" style="background: linear-gradient(90deg, #60a5fa, #2563eb); width: 0%;"></div>
+                        </div>
+                        <div class="summary-footer">
+                            <span id="text_effort_total">โทรแล้ว: 0 / 0 คัน</span>
+                        </div>
                     </div>
-                    <div id="dash_motivation" style="text-align: center; margin-top: 15px; font-weight: 600; font-size: 14.5px; color: #1b5e20;"></div>
+
+                    <div class="summary-box box-outcome">
+                        <div class="summary-label">
+                            <span style="color: #15803d;"><i class="fas fa-car"></i> รถเข้าศูนย์ (Result)</span>
+                            <span id="label_outcome_percent" style="color: #15803d;">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="bar_outcome_flow" style="background: linear-gradient(90deg, #4ade80, #16a34a); width: 0%;"></div>
+                        </div>
+                        <div class="summary-footer">
+                            <span id="text_outcome_total">เข้าจริง: 0 / 317 คัน</span>
+                        </div>
+                    </div>
+
                 </div>
 
+                <div id="dash_motivation" style="text-align: center; margin-top: 5px; font-weight: 600; font-size: 14.5px; color: #1b5e20; padding: 12px; border-radius: 8px; background: #e8f5e9; border: 1px dashed #c8e6c9;">กำลังโหลดข้อความ...</div>
                 <div id="dash_loading" style="text-align: center; padding: 40px; color: #777;"><div class="spinner-small"></div> กำลังประมวลผลข้อมูล...</div>
                 
-                <div id="dash_charts" style="display: none;">
+                <div id="dash_charts" style="display: none; margin-top: 30px;">
                     <div class="dash-charts-grid">
                         <div class="chart-box">
                             <h4 data-tooltip="แสดงยอดรวมรถเข้ารับบริการ แบ่งตามเจ้าหน้าที่ CR">ยอดรถเข้ารับบริการจำแนกตามเจ้าหน้าที่ (คัน)</h4>
@@ -94,18 +153,21 @@
         </section>
 
         <section id="tab-input" class="tab-content">
-            <div class="card" style="max-width: 650px; margin: 0 auto;">
+            <div class="card" style="max-width: 850px; margin: 0 auto;">
                 <h2>📝 บันทึกข้อมูลปฏิบัติงาน (Daily Service Log)</h2>
-                <div class="form-group">
-                    <label>👩‍💼 เจ้าหน้าที่ลูกค้าสัมพันธ์ (CR)</label>
-                    <select id="cr_name">
-                        <option value="กรรณิกา">กรรณิกา</option>
-                        <option value="เรืองศิริ">เรืองศิริ</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>📅 วันที่ลูกค้าเข้ารับบริการ</label>
-                    <input type="date" id="record_date">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>👩‍💼 เจ้าหน้าที่ลูกค้าสัมพันธ์ (CR)</label>
+                        <select id="cr_name">
+                            <option value="กรรณิกา">กรรณิกา</option>
+                            <option value="เรืองศิริ">เรืองศิริ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>📅 วันที่ลูกค้าเข้ารับบริการ</label>
+                        <input type="date" id="record_date">
+                    </div>
                 </div>
                 
                 <hr style="border: 0.5px dashed #ccc; margin: 20px 0;">
@@ -119,7 +181,7 @@
                     <input type="number" id="type_inbound" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
                 </div>
                 <div class="form-group input-number-group">
-                    <label data-tooltip="ลูกค้าที่เดินทางมาเอง (Walk-in) หรือได้รับนัดหมายจากฝ่ายอื่น">3️⃣ ลูกค้า Walk-in / ได้รับการแนะนำ (จำนวนคัน)</label>
+                    <label data-tooltip="ได้รับนัดหมายจากฝ่ายอื่น">3️⃣ ได้รับการแนะนำ (จำนวนคัน)</label>
                     <input type="number" id="type_referral" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
                 </div>
 
@@ -131,6 +193,31 @@
                 <button id="save-btn" class="btn-submit" onclick="saveRecord()">
                     <i class="fas fa-cloud-upload-alt"></i> บันทึกข้อมูลเข้าสู่ระบบ
                 </button>
+
+                <div style="margin-top: 40px;">
+                    <h3 style="color: #0d47a1; border-bottom: 2px solid #bbdefb; padding-bottom: 10px; font-size: 16px;">
+                        <i class="fas fa-history"></i> ประวัติการบันทึกข้อมูลล่าสุด (เดือนนี้)
+                    </h3>
+                    <div style="overflow-x: auto;">
+                        <table class="premium-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่รับบริการ</th>
+                                    <th>พนักงาน (CR)</th>
+                                    <th>ตรีเพชร</th>
+                                    <th>Inbound</th>
+                                    <th>Walk-in/แนะนำ</th>
+                                    <th>ยอดรวม</th>
+                                    <th>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentRecordsTableBody">
+                                <tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">กรุณาโหลดหน้าเว็บอีกครั้งเพื่อแสดงข้อมูล...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -286,6 +373,56 @@
                     <div class="chart-container" style="height: 250px;"><canvas id="ruangsiriChart"></canvas></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="editRecordModal" class="modal" style="display: none; z-index: 1300;">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-modal" onclick="closeEditRecordModal()" data-tooltip="ปิดหน้าต่าง">&times;</span>
+            <h2 style="color: #0d47a1; border-bottom: 2px solid #bbdefb; padding-bottom: 10px; margin-top:0;">
+                <i class="fas fa-edit" style="color:#1565c0;"></i> แก้ไขข้อมูลปฏิบัติงาน
+            </h2>
+            
+            <input type="hidden" id="edit_record_id">
+            <input type="hidden" id="edit_record_row">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>👩‍💼 เจ้าหน้าที่ (CR)</label>
+                    <select id="edit_cr_name">
+                        <option value="กรรณิกา">กรรณิกา</option>
+                        <option value="เรืองศิริ">เรืองศิริ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>📅 วันที่รับบริการ</label>
+                    <input type="date" id="edit_record_date">
+                </div>
+            </div>
+            
+            <hr style="border: 0.5px dashed #ccc; margin: 15px 0;">
+
+            <div class="form-group input-number-group">
+                <label>1️⃣ รายชื่อจากระบบตรีเพชร</label>
+                <input type="number" id="edit_type_tripetch" min="0" oninput="calculateEditTotal()" onclick="this.select()">
+            </div>
+            <div class="form-group input-number-group">
+                <label>2️⃣ ลูกค้าติดต่อรับบริการด้วยตนเอง</label>
+                <input type="number" id="edit_type_inbound" min="0" oninput="calculateEditTotal()" onclick="this.select()">
+            </div>
+            <div class="form-group input-number-group">
+                <label>3️⃣ ได้รับการแนะนำ</label>
+                <input type="number" id="edit_type_referral" min="0" oninput="calculateEditTotal()" onclick="this.select()">
+            </div>
+
+            <div class="form-group total-box" style="margin-bottom: 15px;">
+                <label>🚘 ยอดรวมรถยนต์เข้ารับบริการ (คัน)</label>
+                <input type="number" id="edit_type_total" readonly>
+            </div>
+            
+            <button id="btnSaveEditRecord" class="btn-submit" onclick="saveEditRecord()" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+                💾 บันทึกการแก้ไข
+            </button>
         </div>
     </div>
 
