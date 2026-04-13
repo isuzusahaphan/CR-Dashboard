@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(document.getElementById('admin_month').querySelector(`option[value="${mm}"]`)) document.getElementById('admin_month').value = mm;
     if(document.getElementById('admin_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('admin_year').value = yyyy;
 
-    // เซ็ตค่า Default ให้ตัวกรอง "ตารางประวัติงาน"
+    // 🌟 [เพิ่มใหม่] เซ็ตค่า Default ให้ตัวกรอง "ตารางประวัติงาน" 🌟
     if(document.getElementById('filter_record_month') && document.getElementById('filter_record_month').querySelector(`option[value="${mm}"]`)) {
         document.getElementById('filter_record_month').value = mm;
     }
@@ -249,15 +249,20 @@ function loadDashboard() {
                 }
             });
 
-            // 🌟 วาดการ์ด CSV แบบเก่า (สีฟ้า/เทา)
+            // ==========================================
+            // 🌟 วาดการ์ดทั้งหมดให้เรียงต่อกันในกล่องเดียว 🌟
+            // ==========================================
+            let finalCardsHtml = '';
+            
+            let lastUpdateBadge = d.csvLastUpdate && d.csvLastUpdate !== '-' ? `<span style="font-size: 12px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 12px; font-weight: normal; margin-left: 10px; border: 1px solid #bbdefb;"><i class="fas fa-history"></i> ล่าสุด: ${d.csvLastUpdate}</span>` : '';
+            finalCardsHtml += `<div style="grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; margin-bottom:10px;"><h3 style="color:#0d47a1; margin: 0;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3>${lastUpdateBadge}</div>`;
+
+            // 1. วาดการ์ด CSV แบบเก่า (สีฟ้า/เทา)
             if (d.csvData && d.csvData.length > 0) {
-                let lastUpdateBadge = d.csvLastUpdate && d.csvLastUpdate !== '-' ? `<span style="font-size: 12px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 12px; font-weight: normal; margin-left: 10px; border: 1px solid #bbdefb;"><i class="fas fa-history"></i> ล่าสุด: ${d.csvLastUpdate}</span>` : '';
-                let csvHtml = `<div style="grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; margin-bottom:10px;"><h3 style="color:#0d47a1; margin: 0;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3>${lastUpdateBadge}</div>`;
-                
                 d.csvData.forEach(item => {
                     const needToCall = item.tracked + item.untracked; 
                     let actualPercent = needToCall === 0 ? 100 : Math.round((item.tracked / needToCall) * 100);
-                    csvHtml += `
+                    finalCardsHtml += `
                     <div class="csv-card">
                         <div class="csv-title">${item.group}</div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
@@ -277,18 +282,16 @@ function loadDashboard() {
                         </div>
                     </div>`;
                 });
-                document.getElementById('dash_csv_tracking').innerHTML = csvHtml;
             } else { 
-                document.getElementById('dash_csv_tracking').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:#777; padding: 40px; background: #fff; border: 1px dashed #ccc; border-radius: 10px; margin-bottom:0;">⚠️ ผู้ดูแลระบบยังไม่ได้อัปโหลดฐานข้อมูลการติดตามลูกค้าในเดือนนี้</p>'; 
+                finalCardsHtml += '<p style="grid-column: 1 / -1; text-align:center; color:#777; padding: 40px; background: #fff; border: 1px dashed #ccc; border-radius: 10px; margin-bottom: 20px;">⚠️ ผู้ดูแลระบบยังไม่ได้อัปโหลดฐานข้อมูลการติดตามลูกค้าในเดือนนี้</p>'; 
             }
 
-            // 🌟 วาดการ์ด Extra Leads ที่แอดมินเพิ่งเพิ่มเข้ามา (สีเขียว)
-            let extraCardsHtml = '';
+            // 2. วาดการ์ด Extra Leads ที่แอดมินเพิ่งเพิ่มเข้ามา (สีเขียว)
             if (d.extraLeads && d.extraLeads.length > 0) {
                 d.extraLeads.forEach(item => {
                     const needToCall = item.tracked + item.untracked; 
                     let actualPercent = needToCall === 0 ? 100 : Math.round((item.tracked / needToCall) * 100);
-                    extraCardsHtml += `
+                    finalCardsHtml += `
                     <div class="csv-card" style="border: 2px solid #81c784; background: #f1f8e9;">
                         <div class="csv-title" style="color: #2e7d32;"><i class="fas fa-link"></i> ${item.sheetName}</div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
@@ -307,8 +310,16 @@ function loadDashboard() {
                     </div>`;
                 });
             }
-            // ยัดการ์ดสีเขียวลงไปก่อนปุ่ม +
-            document.getElementById('dash_extra_cards').innerHTML = extraCardsHtml;
+            
+            // 3. เติมการ์ด ปุ่ม "+" ต่อท้ายสุดเสมอ
+            finalCardsHtml += `
+            <div class="csv-card" style="border: 2px dashed #4caf50; background: #f1f8e9; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; min-height: 200px; transition: 0.2s;" onclick="openExtraLeadModal()" onmouseover="this.style.background='#e8f5e9'; this.style.transform='translateY(-3px)';" onmouseout="this.style.background='#f1f8e9'; this.style.transform='translateY(0)';">
+                <i class="fas fa-plus-circle" style="font-size: 40px; color: #2e7d32; margin-bottom: 15px;"></i>
+                <h4 style="color: #1b5e20; margin: 0;">เพิ่มฐานข้อมูลเสริม</h4>
+                <p style="font-size: 13px; color: #555; margin-top: 8px;">เชื่อมโยง Google Sheet (Track อัตโนมัติ)</p>
+            </div>`;
+
+            document.getElementById('dash_csv_tracking').innerHTML = finalCardsHtml;
         }
     })
     .catch(e => { 
