@@ -216,7 +216,7 @@ function loadDashboard() {
             typeChartInstance = new Chart(typeCtx, {
                 type: 'doughnut',
                 data: { 
-                    labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], 
+                    labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง', 'ได้รับการแนะนำำ'], 
                     datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] 
                 },
                 options: { 
@@ -283,14 +283,14 @@ function openBreakdownModal() {
         if (kannikaChartInstance) kannikaChartInstance.destroy();
         kannikaChartInstance = new Chart(kanCtx, { 
             type: 'doughnut', 
-            data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
+            data: { labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง', 'ได้รับการแนะนำ'], datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
             options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } } } 
         });
         
         if (ruangsiriChartInstance) ruangsiriChartInstance.destroy();
         ruangsiriChartInstance = new Chart(ruangCtx, { 
             type: 'doughnut', 
-            data: { labels: ['ระบบตรีเพชร', 'ติดต่อด้วยตนเอง', 'Walk-in/แนะนำ'], datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
+            data: { labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง', 'ได้รับการแนะนำ'], datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
             options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } } } 
         });
     }, 100);
