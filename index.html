@@ -54,16 +54,50 @@
                     </div>
                 </div>
 
-                <div class="progress-container">
-                    <div class="progress-labels">
-                        <span>เป้าหมายการติดตามประจำเดือน: <span id="dash_target" style="color:#1565c0;">0</span> คัน</span>
-                        <span>ยอดรถเข้ารับบริการจริง: <span id="dash_current" style="color:#2e7d32;">0</span> คัน</span>
+                <div class="dashboard-summary-grid">
+                    
+                    <div class="summary-box box-lead">
+                        <div class="summary-label">
+                            <span><i class="fas fa-database"></i> ความพร้อมของฐานข้อมูล (Leads)</span>
+                            <span id="label_lead_percent">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill bar-orange" id="bar_lead_flow"></div>
+                        </div>
+                        <div class="summary-footer">
+                            <span id="text_lead_total">มีรายชื่อในมือ: 0 / 1,057 รายการ</span>
+                        </div>
                     </div>
-                    <div class="progress-bar-bg" data-tooltip="ความคืบหน้าเทียบกับเป้าหมายรวมประจำเดือน">
-                        <div class="progress-bar-fill" id="dash_progress">0%</div>
+
+                    <div class="summary-box box-effort">
+                        <div class="summary-label">
+                            <span><i class="fas fa-phone-alt"></i> ความคืบหน้าการติดตาม (Action)</span>
+                            <span id="label_effort_percent">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill bar-blue" id="bar_effort_flow"></div>
+                        </div>
+                        <div class="summary-footer">
+                            <span id="text_effort_total">โทรแล้ว: 0 / 0 รายการ</span>
+                        </div>
                     </div>
-                    <div id="dash_motivation" style="text-align: center; margin-top: 15px; font-weight: 600; font-size: 14.5px; color: #1b5e20;"></div>
+
+                    <div class="summary-box box-outcome">
+                        <div class="summary-label">
+                            <span><i class="fas fa-car"></i> ยอดรถเข้ารับบริการจริง (Result)</span>
+                            <span id="label_outcome_percent">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill bar-green" id="bar_outcome_flow"></div>
+                        </div>
+                        <div class="summary-footer">
+                            <span id="text_outcome_total">เข้าศูนย์แล้ว: 0 / 317 คัน</span>
+                        </div>
+                    </div>
+
                 </div>
+
+                <div id="dash_motivation" style="text-align: center; margin-top: 15px; font-weight: 600; font-size: 14.5px; color: #1b5e20; padding: 10px; border-radius: 8px; background: #f1f8e9;"></div>
 
                 <div id="dash_loading" style="text-align: center; padding: 40px; color: #777;"><div class="spinner-small"></div> กำลังประมวลผลข้อมูล...</div>
                 
