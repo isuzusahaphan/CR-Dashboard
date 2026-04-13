@@ -9,6 +9,7 @@ let ruangsiriChartInstance = null;
 let currentDashboardData = null; 
 
 let allReportsList = [];
+let recentRecordsList = []; // 🌟 เก็บประวัติการบันทึกงานล่าสุด
 
 // ตัวแปรสำหรับระบบศูนย์ฝึกอบรม (Training Quiz)
 let currentQuestions = [];
@@ -18,12 +19,12 @@ let score = 0;
 
 // 🔥 ฟังก์ชันช่วยแสดง Loading หรูๆ
 function showLoading(text) {
-  Swal.fire({
-    title: text,
-    allowOutsideClick: false,
-    showConfirmButton: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
+    Swal.fire({
+        title: text,
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -45,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     loadDashboard();
+    loadRecentRecords(); // 🌟 โหลดประวัติงานตอนเปิดเว็บ
 });
 
 // ==========================================
@@ -59,6 +61,7 @@ function switchTab(evt, tabId) {
     if (tabId === 'tab-promo') loadPromotions();
     if (tabId === 'tab-reports') loadReports();
     if (tabId === 'tab-dashboard') loadDashboard();
+    if (tabId === 'tab-input') loadRecentRecords(); // 🌟 โหลดประวัติงานอัปเดตใหม่เมื่อเข้าแท็บ
     if (tabId === 'tab-training') { loadQuizTopics(); loadScoreHistory(); }
 }
 
@@ -86,7 +89,7 @@ async function openAdminTab() {
 }
 
 // ==========================================
-// 🌟 แท็บ 1: กระดานแสดงผล (Dashboard)
+// 🌟 แท็บ 1: กระดานแสดงผล (Dashboard) - 🌟 อัปเกรดระบบ 3 มิติ
 // ==========================================
 const donutFormatter = (value, ctx) => {
     if(value === 0) return '';
@@ -111,52 +114,79 @@ function loadDashboard() {
     
     document.getElementById('dash_loading').style.display = 'block'; 
     document.getElementById('dash_charts').style.display = 'none';
+    document.querySelector('.dashboard-summary-grid').style.display = 'none';
 
     fetch(`${API_URL}?action=get_dashboard&month=${month}&year=${year}`)
     .then(r => r.json())
     .then(res => {
         document.getElementById('dash_loading').style.display = 'none'; 
         document.getElementById('dash_charts').style.display = 'block';
+        document.querySelector('.dashboard-summary-grid').style.display = 'grid';
 
         if (res.result === 'success') {
             const d = res.data;
             currentDashboardData = d; 
 
-            document.getElementById('dash_target').innerText = d.target;
-            document.getElementById('dash_current').innerText = d.current;
+            // ==========================================
+            // 🎯 การคำนวณ Dashboard 3 มิติ (Leading Indicator)
+            // ==========================================
+            const targetOutcome = 317; // เป้าหมายรถเข้า
+            const targetLeads = 1057;  // เป้าหมายการหา Data (มาจาก 317/30%)
             
-            document.getElementById('update_kannika').innerText = d.lastUpdateKannika;
-            document.getElementById('update_ruangsiri').innerText = d.lastUpdateRuangsiri;
+            let totalLeadsInHand = 0; // ผลรวมเป้าหมายใน CSV
+            let totalTracked = 0;     // ผลรวมที่โทรแล้วใน CSV
 
-            let percent = d.target > 0 ? Math.round((d.current / d.target) * 100) : 0;
-            const pb = document.getElementById('dash_progress');
-            pb.style.width = (percent > 100 ? 100 : percent) + '%'; 
-            pb.innerText = percent + '%';
-            
+            if (d.csvData && d.csvData.length > 0) {
+                d.csvData.forEach(item => {
+                    totalLeadsInHand += item.target; // รวมรายชื่อ 15 กลุ่ม
+                    totalTracked += item.tracked;    // รวมจำนวนที่โทรติดตามแล้ว
+                });
+            }
+
+            // --- 1. มิติ ฐานข้อมูล (Leads) ---
+            let leadPct = Math.round((totalLeadsInHand / targetLeads) * 100);
+            if (leadPct > 100) leadPct = 100;
+            document.getElementById('label_lead_percent').innerText = leadPct + '%';
+            document.getElementById('bar_lead_flow').style.width = leadPct + '%';
+            document.getElementById('text_lead_total').innerText = `มีรายชื่อในมือ: ${totalLeadsInHand.toLocaleString()} / 1,057 รายการ`;
+
+            // --- 2. มิติ ความพยายาม (Effort/Action) ---
+            let effortPct = totalLeadsInHand > 0 ? Math.round((totalTracked / totalLeadsInHand) * 100) : 0;
+            if (effortPct > 100) effortPct = 100;
+            document.getElementById('label_effort_percent').innerText = effortPct + '%';
+            document.getElementById('bar_effort_flow').style.width = effortPct + '%';
+            document.getElementById('text_effort_total').innerText = `โทรแล้ว: ${totalTracked.toLocaleString()} / ${totalLeadsInHand.toLocaleString()} รายการ`;
+
+            // --- 3. มิติ ผลลัพธ์สุทธิ (Outcome/Result) ---
+            let outcomePct = Math.round((d.current / targetOutcome) * 100);
+            if (outcomePct > 100) outcomePct = 100;
+            document.getElementById('label_outcome_percent').innerText = outcomePct + '%';
+            document.getElementById('bar_outcome_flow').style.width = outcomePct + '%';
+            document.getElementById('text_outcome_total').innerText = `เข้าจริง: ${d.current.toLocaleString()} / 317 คัน`;
+
+            // --- 💡 กำหนดข้อความ Motivation ตาม 3 มิติ ---
             let motivationText = "";
-            if(percent >= 100) { 
-                pb.style.background = "linear-gradient(90deg, #1b5e20, #388e3c)"; 
-                motivationText = "🏆 ยอดเยี่ยมเหนือความคาดหมาย! ผลงานทะลุเป้าหมายประจำเดือนแล้ว ขอเสียงปรบมือให้ทีม CR ครับ 🎉"; 
-                
-                // 🔥 ยิงพลุเมื่อยอดเป้าหมาย CR ทะลุ 100%
-                if(!hasCelebratedCR100) {
-                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 3000 });
-                    hasCelebratedCR100 = true;
-                }
-            } else if(percent >= 80) { 
-                pb.style.background = "linear-gradient(90deg, #388e3c, #81c784)"; 
-                motivationText = "🔥 โค้งสุดท้ายแล้ว! ผลงานทะลุ 80% ลุยอีกนิดเดียวเป้าหมายอยู่แค่เอื้อมครับ 🚀"; 
+            if(outcomePct >= 100) {
+                motivationText = "🏆 ยอดเยี่ยมเหนือความคาดหมาย! ผลงานรถเข้าศูนย์ทะลุเป้าหมาย 317 คันแล้ว ขอเสียงปรบมือให้ทีม CR ครับ 🎉"; 
+                if(!hasCelebratedCR100) { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 3000 }); hasCelebratedCR100 = true; }
+            } else if (effortPct >= 100) {
+                motivationText = "🔥 ความพยายามสุดยอดมาก! โทรติดตามลูกค้าครบทุกรายชื่อในมือแล้ว รอรับผลลัพธ์ที่สวยงามได้เลย 🚀";
                 hasCelebratedCR100 = false;
-            } else if(percent >= 50) { 
-                pb.style.background = "linear-gradient(90deg, #1565c0, #4fc3f7)"; 
-                motivationText = "💪 เดินทางมาเกินครึ่งทางแล้ว! รักษามาตรฐานการทำงานที่ยอดเยี่ยมนี้ต่อไปครับ ✨"; 
+            } else if (totalLeadsInHand < targetLeads) {
+                let shortage = targetLeads - totalLeadsInHand;
+                motivationText = `⚠️ <b>แจ้งเตือนผู้บริหาร:</b> ฐานข้อมูลยังขาดอีก ${shortage} รายชื่อเพื่อให้ถึงเป้าหมาย | <b>ทีม CR:</b> สู้ๆ ทยอยโทรที่มีอยู่ในมือให้ครบก่อนนะครับ 💪`;
                 hasCelebratedCR100 = false;
-            } else { 
-                pb.style.background = "linear-gradient(90deg, #d32f2f, #e57373)"; 
-                motivationText = "🌱 เริ่มต้นเป้าหมายใหม่ ค่อยๆ สะสมยอดไปทีละคัน เป็นกำลังใจให้ทีม CR ทุกคนครับ ✌️"; 
+            } else {
+                motivationText = "💪 ฐานข้อมูลพร้อมแล้ว! ลุยโทรติดตามให้ครบทุกรายชื่อ เพื่อเป้าหมายรถเข้าศูนย์ของเราครับ ✨";
                 hasCelebratedCR100 = false;
             }
             document.getElementById('dash_motivation').innerHTML = motivationText;
+
+            // ==========================================
+            // อัปเดตข้อมูลจิปาถะ และกราฟต่างๆ
+            // ==========================================
+            document.getElementById('update_kannika').innerText = d.lastUpdateKannika;
+            document.getElementById('update_ruangsiri').innerText = d.lastUpdateRuangsiri;
 
             const barCtx = document.getElementById('crChart').getContext('2d');
             const barGradKannika = createGradient(barCtx, '#4ade80', '#15803d'); 
@@ -271,7 +301,7 @@ function closeBreakdownModal() {
 }
 
 // ==========================================
-// 🌟 แท็บ 2: บันทึกข้อมูล (Input)
+// 🌟 แท็บ 2: บันทึกข้อมูล และ การจัดการประวัติ (Edit/Delete)
 // ==========================================
 function calculateTotal() {
     const tripetch = parseInt(document.getElementById('type_tripetch').value) || 0;
@@ -280,7 +310,7 @@ function calculateTotal() {
     document.getElementById('type_total').value = tripetch + inbound + referral;
 }
 
-// 🔥 อัปเกรด Alert บันทึกข้อมูล
+// 🔥 บันทึกข้อมูลงาน
 function saveRecord() {
     const crName = document.getElementById('cr_name').value;
     const recordDate = document.getElementById('record_date').value;
@@ -310,6 +340,10 @@ function saveRecord() {
                 document.getElementById('type_inbound').value = 0; 
                 document.getElementById('type_referral').value = 0; 
                 calculateTotal(); 
+                
+                // โหลดประวัติและแดชบอร์ดใหม่เพื่ออัปเดตข้อมูลทันที
+                loadRecentRecords();
+                loadDashboard();
             }
         })
         .catch(e => { 
@@ -333,6 +367,150 @@ function saveRecord() {
     } else {
         executeSave();
     }
+}
+
+// 🌟 ระบบจัดการประวัติ: ดึงข้อมูล
+function loadRecentRecords() {
+    const month = document.getElementById('dash_month').value || String(new Date().getMonth() + 1).padStart(2, '0');
+    const year = document.getElementById('dash_year').value || new Date().getFullYear();
+    
+    document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;"><div class="spinner-small"></div> กำลังโหลดข้อมูลประวัติ...</td></tr>';
+    
+    fetch(`${API_URL}?action=get_recent_records&month=${month}&year=${year}`)
+    .then(r => r.json())
+    .then(res => {
+        if(res.result === 'success') {
+            recentRecordsList = res.data;
+            renderRecentRecords();
+        } else {
+            document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">ไม่พบข้อมูลประวัติในระบบ</td></tr>';
+        }
+    }).catch(e => {
+        document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #d32f2f;">เครือข่ายขัดข้อง โหลดข้อมูลประวัติล้มเหลว</td></tr>';
+    });
+}
+
+// 🌟 ระบบจัดการประวัติ: วาดตาราง
+function renderRecentRecords() {
+    const tbody = document.getElementById('recentRecordsTableBody');
+    if(recentRecordsList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">ยังไม่มีประวัติการบันทึกงานในเดือนนี้</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    recentRecordsList.forEach(rec => {
+        let displayDate = rec.date;
+        try {
+            const parts = rec.date.split('T')[0].split('-');
+            if(parts.length === 3) displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`; // แปลงเป็น DD/MM/YYYY ให้ดูง่าย
+        } catch(e) {}
+
+        html += `
+        <tr>
+            <td>${displayDate}</td>
+            <td><b>${rec.cr_name}</b></td>
+            <td>${rec.tripetch}</td>
+            <td>${rec.inbound}</td>
+            <td>${rec.referral}</td>
+            <td><b style="color:#1565c0;">${rec.total}</b></td>
+            <td>
+                <button class="btn-sm" onclick="openEditRecordModal('${rec.id}')" title="แก้ไข"><i class="fas fa-edit"></i></button>
+                <button class="btn-sm btn-danger-sm" onclick="deleteRecord('${rec.id}')" title="ลบ"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+}
+
+// 🌟 ระบบจัดการประวัติ: ลบถาวร
+function deleteRecord(id) {
+    Swal.fire({
+        title: 'ยืนยันการลบประวัติ?',
+        text: "ข้อมูลนี้จะถูกลบออกจากระบบและหายไปจากแดชบอร์ดถาวร",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'ลบเลย!'
+    }).then((result) => {
+        if(result.isConfirmed) {
+            showLoading('กำลังลบข้อมูล...');
+            fetch(API_URL, { method:'POST', body: JSON.stringify({action: 'delete_record', id: id}) })
+            .then(r => r.json())
+            .then(res => {
+                if(res.result === 'success') {
+                    Swal.fire({ icon: 'success', title: 'ลบสำเร็จ', showConfirmButton: false, timer: 1500 });
+                    loadRecentRecords();
+                    loadDashboard();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'ลบไม่สำเร็จ', text: res.message });
+                }
+            }).catch(e => Swal.fire({ icon: 'error', title: 'ขัดข้อง', text: 'เชื่อมต่อขัดข้อง' }));
+        }
+    });
+}
+
+// 🌟 ระบบจัดการประวัติ: เปิดหน้าต่างแก้ไข
+function openEditRecordModal(id) {
+    const rec = recentRecordsList.find(r => String(r.id) === String(id));
+    if(!rec) return;
+    
+    document.getElementById('edit_record_id').value = rec.id;
+    document.getElementById('edit_record_row').value = rec.row; 
+    document.getElementById('edit_cr_name').value = rec.cr_name;
+    document.getElementById('edit_record_date').value = rec.date.split('T')[0]; // Format YYYY-MM-DD
+    document.getElementById('edit_type_tripetch').value = rec.tripetch;
+    document.getElementById('edit_type_inbound').value = rec.inbound;
+    document.getElementById('edit_type_referral').value = rec.referral;
+    document.getElementById('edit_type_total').value = rec.total;
+    
+    document.getElementById('editRecordModal').style.display = 'flex';
+}
+
+function closeEditRecordModal() {
+    document.getElementById('editRecordModal').style.display = 'none';
+}
+
+function calculateEditTotal() {
+    const tripetch = parseInt(document.getElementById('edit_type_tripetch').value) || 0;
+    const inbound = parseInt(document.getElementById('edit_type_inbound').value) || 0;
+    const referral = parseInt(document.getElementById('edit_type_referral').value) || 0;
+    document.getElementById('edit_type_total').value = tripetch + inbound + referral;
+}
+
+// 🌟 ระบบจัดการประวัติ: บันทึกการแก้ไข
+function saveEditRecord() {
+    const id = document.getElementById('edit_record_id').value;
+    const row = document.getElementById('edit_record_row').value;
+    const crName = document.getElementById('edit_cr_name').value;
+    const date = document.getElementById('edit_record_date').value;
+    const tp = parseInt(document.getElementById('edit_type_tripetch').value) || 0;
+    const ib = parseInt(document.getElementById('edit_type_inbound').value) || 0;
+    const rf = parseInt(document.getElementById('edit_type_referral').value) || 0;
+    const tot = parseInt(document.getElementById('edit_type_total').value) || 0;
+
+    if (!date) return Swal.fire({ icon: 'warning', text: 'กรุณาระบุวันที่' });
+
+    showLoading('กำลังอัปเดตข้อมูล...');
+    fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            action: 'edit_record', id: id, row: row, cr_name: crName, date: date, 
+            tripetch: tp, inbound: ib, referral: rf, total: tot
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.result === 'success') {
+            Swal.fire({ icon: 'success', title: 'แก้ไขสำเร็จ', showConfirmButton: false, timer: 1500 });
+            closeEditRecordModal();
+            loadRecentRecords();
+            loadDashboard();
+        } else {
+            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: res.message });
+        }
+    }).catch(e => Swal.fire({ icon: 'error', title: 'ขัดข้อง', text: 'เชื่อมต่อขัดข้อง' }));
 }
 
 // ==========================================
@@ -476,6 +654,15 @@ function checkAnswer(userAns) {
         document.getElementById('next-q-btn').innerHTML = 'ส่งคำตอบประเมินผล <i class="fas fa-paper-plane"></i>';
     } else {
         document.getElementById('next-q-btn').innerHTML = 'ข้อถัดไป <i class="fas fa-arrow-right"></i>';
+    }
+}
+
+function nextQuestion() {
+    if(currentQuestionIndex < currentQuestions.length - 1) {
+        currentQuestionIndex++;
+        showQuestion();
+    } else {
+        finishQuiz();
     }
 }
 
