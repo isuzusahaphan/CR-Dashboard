@@ -194,10 +194,31 @@
                     <i class="fas fa-cloud-upload-alt"></i> บันทึกข้อมูลเข้าสู่ระบบ
                 </button>
 
-                <div style="margin-top: 40px;">
-                    <h3 style="color: #0d47a1; border-bottom: 2px solid #bbdefb; padding-bottom: 10px; font-size: 16px;">
-                        <i class="fas fa-history"></i> ประวัติการบันทึกข้อมูลล่าสุด (เดือนนี้)
-                    </h3>
+                <div style="margin-top: 50px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #bbdefb; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="color: #0d47a1; margin: 0; font-size: 16px;">
+                            <i class="fas fa-history"></i> ประวัติการบันทึกข้อมูล 
+                        </h3>
+                        
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <select id="filter_record_month" class="form-control" style="width: auto; padding: 6px; font-size: 13px;" onchange="loadRecentRecords()">
+                                <option value="01">มกราคม</option><option value="02">กุมภาพันธ์</option><option value="03">มีนาคม</option>
+                                <option value="04">เมษายน</option><option value="05">พฤษภาคม</option><option value="06">มิถุนายน</option>
+                                <option value="07">กรกฎาคม</option><option value="08">สิงหาคม</option><option value="09">กันยายน</option>
+                                <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+                            </select>
+                            <select id="filter_record_year" class="form-control" style="width: auto; padding: 6px; font-size: 13px;" onchange="loadRecentRecords()">
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                            <select id="filter_record_cr" class="form-control" style="width: auto; padding: 6px; font-size: 13px;" onchange="applyRecordFilters()">
+                                <option value="all">👥 พนักงานทั้งหมด</option>
+                                <option value="กรรณิกา">กรรณิกา</option>
+                                <option value="เรืองศิริ">เรืองศิริ</option>
+                            </select>
+                        </div>
+                    </div>
+                    
                     <div style="overflow-x: auto;">
                         <table class="premium-table">
                             <thead>
@@ -212,10 +233,11 @@
                                 </tr>
                             </thead>
                             <tbody id="recentRecordsTableBody">
-                                <tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">กรุณาโหลดหน้าเว็บอีกครั้งเพื่อแสดงข้อมูล...</td></tr>
+                                <tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">กำลังโหลดข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
+                    <div id="recordPagination"></div>
                 </div>
 
             </div>
