@@ -108,17 +108,31 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 }
 .btn-outline-blue:hover { background: #1565c0; color: #fff; box-shadow: 0 2px 5px rgba(21, 101, 192, 0.3);}
 
+/* 🌟 [ใหม่] Dashboard 3 มิติ 🌟 */
+.dashboard-summary-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; }
+.summary-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+.summary-label { display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-bottom: 10px; color: #333; }
+.summary-footer { display: flex; justify-content: space-between; font-size: 13.5px; color: #555; margin-top: 8px; font-weight: 600; }
+
+.box-lead { border-left: 5px solid #f59e0b; }
+.box-effort { border-left: 5px solid #3b82f6; }
+.box-outcome { border-left: 5px solid #10b981; }
+
+@media (min-width: 768px) {
+    .dashboard-summary-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+
 /* 🌟 CSV Tracking Cards 🌟 */
 #dash_csv_tracking { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 20px;}
 .csv-card { background: #fff; padding: 20px; border-radius: 10px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: 0.2s;}
 .csv-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.08); border-color: #90caf9;}
 .csv-title { font-size: 15px; color: #0d47a1; font-weight: bold; margin-bottom: 10px; min-height: 40px;}
 
-/* 🌟 Progress Bars 🌟 */
-.progress-container { background: #e8f5e9; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #c8e6c9; }
+/* 🌟 Progress Bars (เก่า & ใหม่) 🌟 */
+.progress-container { background: #e8f5e9; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #c8e6c9; display: none; /* ซ่อนอันเก่าไว้ */ }
 .progress-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 16px; color: #333; }
 .progress-bar-bg { width: 100%; background-color: #e0e0e0; border-radius: 12px; height: 28px; overflow: hidden; position: relative;}
-.progress-bar-fill { background: linear-gradient(90deg, #2e7d32, #4caf50); height: 100%; width: 0%; transition: width 1.5s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
+.progress-bar-fill { height: 100%; width: 0%; transition: width 1.5s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
 
 /* 🌟 Report Filters 🌟 */
 .report-filters { display: flex; gap: 15px; flex-wrap: wrap; background: #f0f2f5; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0;}
@@ -239,6 +253,22 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .modal-content { background: white; padding: 30px; border-radius: 12px; width: 100%; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 .close { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; color: #888; line-height: 1; transition: 0.2s;}
 .close:hover { color: #d32f2f; transform: scale(1.2);}
+
+/* 🌟 [ใหม่] Premium Table (ตารางประวัติงาน) 🌟 */
+.premium-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+.premium-table th { background: #f1f5f9; color: #475569; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+.premium-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+.premium-table tbody tr:hover { background: #f8fafc; }
+
+/* 🌟 [ใหม่] ปุ่มขนาดเล็ก (สำหรับจัดการตาราง) 🌟 */
+.btn-sm { padding: 5px 10px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: white; margin-right: 4px; transition: 0.2s;}
+.btn-sm:hover { background: #f1f5f9; }
+.btn-danger-sm { color: #b91c1c; border-color: #fca5a5; background: #fee2e2; }
+.btn-danger-sm:hover { background: #fecaca; }
+
+/* 🌟 [ใหม่] ปุ่มปิด Modal สำหรับหน้าต่างแก้ไข 🌟 */
+.close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666; transition: 0.2s;}
+.close-modal:hover { color: #000; transform: scale(1.1); }
 
 /* 📱 Responsive 📱 */
 @media (max-width: 768px) {
