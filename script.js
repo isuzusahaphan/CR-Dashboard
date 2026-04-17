@@ -185,7 +185,7 @@ function loadDashboard() {
             if (outcomePct > 100) outcomePct = 100;
             document.getElementById('label_outcome_percent').innerText = outcomePct + '%';
             document.getElementById('bar_outcome_flow').style.width = outcomePct + '%';
-            document.getElementById('text_outcome_total').innerText = `เข้าจริง: ${d.current.toLocaleString()} / 317 คัน`;
+            document.getElementById('text_outcome_total').innerText = `เข้าจริงจากนัดหมาย: ${d.current.toLocaleString()} / 317 คัน`;
 
             // --- 💡 กำหนดข้อความ Motivation ตาม 3 มิติ ---
             let motivationText = "";
