@@ -267,7 +267,20 @@
                     
                     <hr style="margin: 30px 0; border: 0.5px dashed #ccc;">
                     
-                    <h4 style="color: #1b5e20; margin-bottom: 15px;"><i class="fas fa-history"></i> ประวัติการทำแบบทดสอบล่าสุด</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <h4 style="color: #1b5e20; margin: 0;"><i class="fas fa-history"></i> ประวัติการทำแบบทดสอบ</h4>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <select id="filter_quiz_name" class="form-control" style="width: auto; padding: 6px; font-size: 13px;" onchange="filterScoreHistory()">
+                                <option value="all">👥 พนักงานทั้งหมด</option>
+                                <option value="กรรณิกา">กรรณิกา</option>
+                                <option value="เรืองศิริ">เรืองศิริ</option>
+                            </select>
+                            <select id="filter_quiz_topic" class="form-control" style="width: auto; padding: 6px; font-size: 13px; max-width: 200px;" onchange="filterScoreHistory()">
+                                <option value="all">📖 ทุกหัวข้อ</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div id="score-history-container" class="report-list"></div>
                 </div>
 
