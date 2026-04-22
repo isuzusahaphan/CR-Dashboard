@@ -96,7 +96,7 @@ async function openAdminTab() {
         cancelButtonText: 'ยกเลิก'
     });
 
-    if (pin === "1234") {
+    if (pin === "2569") {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('tab-admin').classList.add('active');
