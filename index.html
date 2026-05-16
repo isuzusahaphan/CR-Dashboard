@@ -131,6 +131,20 @@
                         <div class="chart-box">
                             <h4 data-tooltip="แสดงยอดรวมรถเข้ารับบริการ แบ่งตามเจ้าหน้าที่ CR">ยอดรถเข้ารับบริการจำแนกตามเจ้าหน้าที่ (คัน)</h4>
                             <div class="chart-container"><canvas id="crChart"></canvas></div>
+                            
+                            <div style="margin-top: 15px; font-size: 13px; color: #424242; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                <div style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 8px;">
+                                    <b style="color: #1565c0;"><i class="fas fa-chart-line"></i> เทียบเป้าตรีเพชร:</b> 
+                                    <span id="pct_tp_total" style="font-weight:bold; color:#1b5e20; font-size: 14px;">0%</span>
+                                    <div style="font-size: 11.5px; color:#666; margin-top: 4px;">กรรณิกา <span id="pct_tp_kan">0%</span> | เรืองศิริ <span id="pct_tp_rue">0%</span></div>
+                                </div>
+                                <div>
+                                    <b style="color: #2e7d32;"><i class="fas fa-chart-line"></i> เทียบเป้าข้อมูลเสริม:</b> 
+                                    <span id="pct_ex_total" style="font-weight:bold; color:#1b5e20; font-size: 14px;">0%</span>
+                                    <div style="font-size: 11.5px; color:#666; margin-top: 4px;">กรรณิกา <span id="pct_ex_kan">0%</span> | เรืองศิริ <span id="pct_ex_rue">0%</span></div>
+                                </div>
+                            </div>
+
                             <div style="text-align: center; font-size: 12.5px; color: #555; margin-top: 15px; background: #e8f5e9; padding: 8px; border-radius: 6px; border: 1px solid #c8e6c9;">
                                 ⏱️ ข้อมูลล่าสุด: <b>กรรณิกา</b> (<span id="update_kannika" style="color:#2e7d32;">-</span>) | <b>เรืองศิริ</b> (<span id="update_ruangsiri" style="color:#1565c0;">-</span>)
                             </div>
@@ -185,6 +199,11 @@
                     <label data-tooltip="ได้รับนัดหมายจากฝ่ายอื่น">3️⃣ ได้รับการแนะนำ (จำนวนคัน)</label>
                     <input type="number" id="type_referral" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
                 </div>
+                
+                <div class="form-group input-number-group">
+                    <label data-tooltip="รายชื่อที่หามาเพิ่มเติมจากแหล่งอื่นๆ (Extra Leads)">4️⃣ รายชื่อจากฐานข้อมูลเสริม (จำนวนคัน)</label>
+                    <input type="number" id="type_extra" value="0" min="0" oninput="calculateTotal()" onclick="this.select()">
+                </div>
 
                 <div class="form-group total-box" data-tooltip="ผลรวมจำนวนรถยนต์ทั้งหมดที่เข้ารับบริการในวันนี้">
                     <label>🚘 ยอดรวมรถยนต์เข้ารับบริการ (คัน)</label>
@@ -229,12 +248,12 @@
                                     <th>ตรีเพชร</th>
                                     <th>Inbound</th>
                                     <th>แนะนำ</th>
-                                    <th>ยอดรวม</th>
+                                    <th>ข้อมูลเสริม</th> <th>ยอดรวม</th>
                                     <th>จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody id="recentRecordsTableBody">
-                                <tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colspan="8" style="text-align:center; padding: 20px; color: #777;">กำลังโหลดข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -449,6 +468,11 @@
             <div class="form-group input-number-group">
                 <label>3️⃣ ได้รับการแนะนำ</label>
                 <input type="number" id="edit_type_referral" min="0" oninput="calculateEditTotal()" onclick="this.select()">
+            </div>
+            
+            <div class="form-group input-number-group">
+                <label>4️⃣ รายชื่อจากฐานข้อมูลเสริม</label>
+                <input type="number" id="edit_type_extra" min="0" oninput="calculateEditTotal()" onclick="this.select()">
             </div>
 
             <div class="form-group total-box" style="margin-bottom: 15px;">
