@@ -140,15 +140,14 @@ function loadDashboard() {
             const targetOutcome = 317; 
             const targetLeads = 1057;  
             
-            // 🌟 แยกยอด Leads ระหว่าง 2 แหล่ง
             let totalTripetchLeads = 0; 
             let totalTrackedTripetch = 0; 
-            let totalPreService = 0; // ยอดรวมเข้าก่อนติดตามทั้งหมด
+            let totalPreService = 0;
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
                     totalTripetchLeads += item.target; 
                     totalTrackedTripetch += item.tracked;
-                    totalPreService += item.preService; // ดึงยอดเข้าก่อนติดตามมารวมกัน
+                    totalPreService += item.preService; 
                 });
             }
 
@@ -161,39 +160,38 @@ function loadDashboard() {
                 });
             }
 
-            // --- 🌟 อัปเดต % ลงในกล่องใต้กราฟแท่ง (ใช้ยอดโทรแล้วจริงเป็นตัวหาร) ---
+            // --- 🌟 [อัปเดต] ใส่ตัวเลขดิบเข้าไปในกล่อง % ฝั่งซ้าย ---
+            let tpTotalIn = d.kannikaBreakdown.tripetch + d.ruangsiriBreakdown.tripetch;
             let tpKanPct = totalTrackedTripetch > 0 ? ((d.kannikaBreakdown.tripetch / totalTrackedTripetch) * 100).toFixed(1) : 0;
             let tpRuePct = totalTrackedTripetch > 0 ? ((d.ruangsiriBreakdown.tripetch / totalTrackedTripetch) * 100).toFixed(1) : 0;
-            let tpTotalPct = totalTrackedTripetch > 0 ? (((d.kannikaBreakdown.tripetch + d.ruangsiriBreakdown.tripetch) / totalTrackedTripetch) * 100).toFixed(1) : 0;
+            let tpTotalPct = totalTrackedTripetch > 0 ? ((tpTotalIn / totalTrackedTripetch) * 100).toFixed(1) : 0;
 
-            document.getElementById('pct_tp_total').innerText = tpTotalPct + '%';
-            document.getElementById('pct_tp_kan').innerText = tpKanPct + '%';
-            document.getElementById('pct_tp_rue').innerText = tpRuePct + '%';
+            document.getElementById('pct_tp_total').innerText = `${tpTotalPct}% (${tpTotalIn}/${totalTrackedTripetch} คัน)`;
+            document.getElementById('pct_tp_kan').innerText = `${tpKanPct}% (${d.kannikaBreakdown.tripetch} คัน)`;
+            document.getElementById('pct_tp_rue').innerText = `${tpRuePct}% (${d.ruangsiriBreakdown.tripetch} คัน)`;
 
+            let exTotalIn = d.kannikaBreakdown.extra + d.ruangsiriBreakdown.extra;
             let exKanPct = totalTrackedExtra > 0 ? ((d.kannikaBreakdown.extra / totalTrackedExtra) * 100).toFixed(1) : 0;
             let exRuePct = totalTrackedExtra > 0 ? ((d.ruangsiriBreakdown.extra / totalTrackedExtra) * 100).toFixed(1) : 0;
-            let exTotalPct = totalTrackedExtra > 0 ? (((d.kannikaBreakdown.extra + d.ruangsiriBreakdown.extra) / totalTrackedExtra) * 100).toFixed(1) : 0;
+            let exTotalPct = totalTrackedExtra > 0 ? ((exTotalIn / totalTrackedExtra) * 100).toFixed(1) : 0;
 
-            document.getElementById('pct_ex_total').innerText = exTotalPct + '%';
-            document.getElementById('pct_ex_kan').innerText = exKanPct + '%';
-            document.getElementById('pct_ex_rue').innerText = exRuePct + '%';
+            document.getElementById('pct_ex_total').innerText = `${exTotalPct}% (${exTotalIn}/${totalTrackedExtra} คัน)`;
+            document.getElementById('pct_ex_kan').innerText = `${exKanPct}% (${d.kannikaBreakdown.extra} คัน)`;
+            document.getElementById('pct_ex_rue').innerText = `${exRuePct}% (${d.ruangsiriBreakdown.extra} คัน)`;
+            // ----------------------------------------
 
-            // --- คำนวณยอดรวม 3 มิติ ---
             let totalLeadsInHand = totalTripetchLeads + totalExtraLeads; 
             let totalTracked = totalTrackedTripetch + totalTrackedExtra;
 
-            // มิติที่ 1: ฐานข้อมูล (Leads)
             let leadPct = Math.round((totalLeadsInHand / targetLeads) * 100);
             if (leadPct > 100) leadPct = 100;
             document.getElementById('label_lead_percent').innerText = leadPct + '%';
             document.getElementById('bar_lead_flow').style.width = leadPct + '%';
             document.getElementById('text_lead_total').innerText = `มีรายชื่อในมือ: ${totalLeadsInHand.toLocaleString()} / 1,057 รายการ`;
 
-            // มิติที่ 2: การติดตาม (Action) แบบ 2 สีรวมกัน (โทรแล้ว + เข้าก่อน)
             let effortTrackedPct = totalLeadsInHand > 0 ? (totalTracked / totalLeadsInHand) * 100 : 0;
             let effortPrePct = totalLeadsInHand > 0 ? (totalPreService / totalLeadsInHand) * 100 : 0;
             
-            // ป้องกันหลอดทะลุ 100% ถ้าตัวเลขเกิน
             if (effortTrackedPct + effortPrePct > 100) {
                 let overflow = (effortTrackedPct + effortPrePct) - 100;
                 effortPrePct -= overflow; 
@@ -207,14 +205,12 @@ function loadDashboard() {
             document.getElementById('bar_effort_pre').style.width = effortPrePct + '%';
             document.getElementById('text_effort_total').innerText = `โทรแล้ว: ${totalTracked.toLocaleString()} | เข้าก่อน: ${totalPreService.toLocaleString()} / ${totalLeadsInHand.toLocaleString()} รายการ`;
 
-            // มิติที่ 3: รถเข้าศูนย์ (Result)
             let outcomePct = Math.round((d.current / targetOutcome) * 100);
             if (outcomePct > 100) outcomePct = 100;
             document.getElementById('label_outcome_percent').innerText = outcomePct + '%';
             document.getElementById('bar_outcome_flow').style.width = outcomePct + '%';
             document.getElementById('text_outcome_total').innerText = `เข้าจริงจากนัดหมาย: ${d.current.toLocaleString()} / 317 คัน`;
 
-            // Motivation Text อิงจากยอดรวม Action แบบใหม่
             let motivationText = "";
             if(outcomePct >= 100) {
                 motivationText = "🏆 ยอดเยี่ยมเหนือความคาดหมาย! ผลงานรถเข้าศูนย์ทะลุเป้าหมาย 317 คันแล้ว ขอเสียงปรบมือให้ทีม CR ครับ 🎉"; 
@@ -235,7 +231,6 @@ function loadDashboard() {
             document.getElementById('update_kannika').innerText = d.lastUpdateKannika;
             document.getElementById('update_ruangsiri').innerText = d.lastUpdateRuangsiri;
 
-            // กราฟแท่ง
             const barCtx = document.getElementById('crChart').getContext('2d');
             const barGradKannika = createGradient(barCtx, '#4ade80', '#15803d'); 
             const barGradRuangsiri = createGradient(barCtx, '#60a5fa', '#1d4ed8'); 
@@ -254,7 +249,6 @@ function loadDashboard() {
                 }
             });
 
-            // กราฟวงกลม
             const typeCtx = document.getElementById('typeChart').getContext('2d');
             const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); // เขียว
             const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); // ส้ม
@@ -278,7 +272,6 @@ function loadDashboard() {
                 }
             });
 
-            // 🌟 วาดกล่อง CSV Cards ให้รองรับ 2 สี
             let finalCardsHtml = '';
             let lastUpdateBadge = d.csvLastUpdate && d.csvLastUpdate !== '-' ? `<span style="font-size: 12px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 12px; font-weight: normal; margin-left: 10px; border: 1px solid #bbdefb;"><i class="fas fa-history"></i> ล่าสุด: ${d.csvLastUpdate}</span>` : '';
             finalCardsHtml += `<div style="grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; margin-bottom:10px;"><h3 style="color:#0d47a1; margin: 0;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3>${lastUpdateBadge}</div>`;
@@ -286,7 +279,7 @@ function loadDashboard() {
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
                     let target = item.target > 0 ? item.target : (item.tracked + item.untracked + item.preService);
-                    if (target === 0) target = 1; // กัน error หาร 0
+                    if (target === 0) target = 1; 
 
                     let trackedPct = (item.tracked / target) * 100;
                     let prePct = (item.preService / target) * 100;
