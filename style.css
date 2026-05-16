@@ -129,7 +129,7 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .csv-title { font-size: 15px; color: #0d47a1; font-weight: bold; margin-bottom: 10px; min-height: 40px;}
 
 /* 🌟 Progress Bars (เก่า & ใหม่) 🌟 */
-.progress-container { background: #e8f5e9; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #c8e6c9; display: none; /* ซ่อนอันเก่าไว้ */ }
+.progress-container { background: #e8f5e9; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #c8e6c9; display: none; }
 .progress-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 16px; color: #333; }
 .progress-bar-bg { width: 100%; background-color: #e0e0e0; border-radius: 12px; height: 28px; overflow: hidden; position: relative;}
 .progress-bar-fill { height: 100%; width: 0%; transition: width 1.5s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
@@ -189,64 +189,36 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .report-info h4 { margin: 0 0 8px 0; font-size: 16px; color: #333;}
 .report-info p { margin: 0; font-size: 13px; color: #777;}
 
-/* 🎓 Quiz & Training UI (อัปเกรดใหม่ NotebookLM Style) 🎓 */
+/* 🎓 Quiz & Training UI 🎓 */
 .quiz-card { background: #fff; padding: 10px 0; }
 .quiz-q-text { font-size: 19px; font-weight: bold; color: #333; margin-bottom: 25px; line-height: 1.6; }
 .quiz-options-wrapper { display: flex; flex-direction: column; gap: 15px; }
 
-/* โครงสร้างตัวเลือกแต่ละข้อ */
-.quiz-opt-container {
-    background: #fff; border: 2px solid #cfd8dc; border-radius: 8px; 
-    transition: 0.2s; overflow: hidden;
-}
+.quiz-opt-container { background: #fff; border: 2px solid #cfd8dc; border-radius: 8px; transition: 0.2s; overflow: hidden; }
 .quiz-opt-container:hover { border-color: #90caf9; }
 
-/* ส่วนคลิกเลือก A B C D */
-.quiz-opt-header { 
-    padding: 18px 20px; cursor: pointer; display: flex; align-items: center; gap: 15px; 
-    font-weight: 600; font-size: 15px; color: #555; background: #fff; transition: 0.2s;
-}
+.quiz-opt-header { padding: 18px 20px; cursor: pointer; display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 15px; color: #555; background: #fff; transition: 0.2s; }
 .quiz-opt-header:hover { background: #f0f8ff; color: #1565c0; }
 
-/* 🔴 เมื่อตอบผิด */
 .quiz-opt-container.incorrect { border-color: #e53935; }
 .quiz-opt-container.incorrect .quiz-opt-header { background: #ffebee; color: #b71c1c; }
 
-/* 🟢 เมื่อตอบถูก (หรือเฉลยข้อที่ถูก) */
 .quiz-opt-container.correct { border-color: #43a047; }
 .quiz-opt-container.correct .quiz-opt-header { background: #e8f5e9; color: #1b5e20; }
 
-/* 🔒 ล็อกไม่ให้คลิกต่อ */
 .quiz-opt-container.locked { pointer-events: none; }
-.quiz-opt-container.locked:not(.correct):not(.incorrect) { opacity: 0.6; } /* หรี่ข้อที่ไม่ได้เลือกและผิด */
+.quiz-opt-container.locked:not(.correct):not(.incorrect) { opacity: 0.6; }
 
-/* 💡 ส่วนกางคำอธิบายของแต่ละข้อ */
-.opt-explain {
-    background: #fff9c4; border-top: 1px dashed #fbc02d; padding: 15px 20px;
-    font-size: 14px; color: #5d4037; line-height: 1.6;
-    display: none; /* เริ่มต้นซ่อนไว้ */
-    animation: slideDown 0.3s ease;
-}
+.opt-explain { background: #fff9c4; border-top: 1px dashed #fbc02d; padding: 15px 20px; font-size: 14px; color: #5d4037; line-height: 1.6; display: none; animation: slideDown 0.3s ease; }
 
-/* 💡 คำอธิบายรวม (ถ้ามี) */
-.explanation-card { 
-    background: #e3f2fd; border-left: 5px solid #1565c0; padding: 20px; border-radius: 8px; margin-top: 25px;
-    animation: slideUp 0.4s ease;
-    display: none; /* เริ่มต้นซ่อนไว้ */
-}
+.explanation-card { background: #e3f2fd; border-left: 5px solid #1565c0; padding: 20px; border-radius: 8px; margin-top: 25px; display: none; animation: slideUp 0.4s ease; }
 .explain-header { font-weight: bold; color: #0d47a1; margin-bottom: 8px; font-size: 15px; }
 .explain-body { color: #333; line-height: 1.5; font-size: 15px; }
 
-/* Animations */
 @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* กล่องประวัติ */
-.history-item { 
-    display: flex; justify-content: space-between; align-items: center; 
-    background: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 12px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #eee; border-left: 5px solid #4caf50;
-}
+.history-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #eee; border-left: 5px solid #4caf50; }
 
 /* 🌟 Modals 🌟 */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;}
@@ -254,23 +226,20 @@ main { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
 .close { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; color: #888; line-height: 1; transition: 0.2s;}
 .close:hover { color: #d32f2f; transform: scale(1.2);}
 
-/* 🌟 [ใหม่] Premium Table (ตารางประวัติงาน) 🌟 */
+/* 🌟 Premium Table 🌟 */
 .premium-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
 .premium-table th { background: #f1f5f9; color: #475569; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
 .premium-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
 .premium-table tbody tr:hover { background: #f8fafc; }
 
-/* 🌟 [ใหม่] ปุ่มขนาดเล็ก (สำหรับจัดการตาราง) 🌟 */
 .btn-sm { padding: 5px 10px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: white; margin-right: 4px; transition: 0.2s;}
 .btn-sm:hover { background: #f1f5f9; }
 .btn-danger-sm { color: #b91c1c; border-color: #fca5a5; background: #fee2e2; }
 .btn-danger-sm:hover { background: #fecaca; }
 
-/* 🌟 [ใหม่] ปุ่มปิด Modal สำหรับหน้าต่างแก้ไข 🌟 */
 .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666; transition: 0.2s;}
 .close-modal:hover { color: #000; transform: scale(1.1); }
 
-/* 🌟 [ใหม่] สไตล์ของ Filter ในตารางประวัติ 🌟 */
 .form-control { border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333; outline: none; }
 .form-control:focus { border-color: #1565c0; box-shadow: 0 0 3px rgba(21,101,192,0.3); }
 
