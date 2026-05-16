@@ -9,21 +9,18 @@ let ruangsiriChartInstance = null;
 let currentDashboardData = null; 
 
 let allReportsList = [];
-let allScoreHistory = []; // 🌟 [เพิ่มใหม่] เก็บประวัติคะแนนสอบไว้ทำ Filter
+let allScoreHistory = []; 
 
-// 🌟 ตัวแปรสำหรับระบบจัดการประวัติงาน 🌟
-let recentRecordsList = []; // เก็บประวัติการบันทึกงานดิบทั้งหมดจาก API
-let filteredRecordsList = []; // เก็บประวัติที่ผ่านการกรองแล้ว
-let currentRecordPage = 1; // หน้าปัจจุบันของตารางประวัติ
-const recordsPerPage = 10; // แสดงหน้าละ 10 รายการ
+let recentRecordsList = []; 
+let filteredRecordsList = []; 
+let currentRecordPage = 1; 
+const recordsPerPage = 10; 
 
-// ตัวแปรสำหรับระบบศูนย์ฝึกอบรม (Training Quiz)
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 let userAnswers = [];
 let score = 0;
 
-// 🔥 ฟังก์ชันช่วยแสดง Loading หรูๆ
 function showLoading(text) {
     Swal.fire({
         title: text,
@@ -40,15 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let mm = String(today.getMonth() + 1).padStart(2, '0');
     let yyyy = String(today.getFullYear());
     
-    // เซ็ตค่า Default ให้หน้า Dashboard
     if(document.getElementById('dash_month').querySelector(`option[value="${mm}"]`)) document.getElementById('dash_month').value = mm;
     if(document.getElementById('dash_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('dash_year').value = yyyy;
     
-    // เซ็ตค่า Default ให้หน้า Admin
     if(document.getElementById('admin_month').querySelector(`option[value="${mm}"]`)) document.getElementById('admin_month').value = mm;
     if(document.getElementById('admin_year').querySelector(`option[value="${yyyy}"]`)) document.getElementById('admin_year').value = yyyy;
 
-    // 🌟 [เพิ่มใหม่] เซ็ตค่า Default ให้ตัวกรอง "ตารางประวัติงาน" 🌟
     if(document.getElementById('filter_record_month') && document.getElementById('filter_record_month').querySelector(`option[value="${mm}"]`)) {
         document.getElementById('filter_record_month').value = mm;
     }
@@ -78,11 +72,10 @@ function switchTab(evt, tabId) {
     if (tabId === 'tab-promo') loadPromotions();
     if (tabId === 'tab-reports') loadReports();
     if (tabId === 'tab-dashboard') loadDashboard();
-    if (tabId === 'tab-input') loadRecentRecords(); // โหลดประวัติงานอัปเดตใหม่เมื่อเข้าแท็บ
+    if (tabId === 'tab-input') loadRecentRecords(); 
     if (tabId === 'tab-training') { loadQuizTopics(); loadScoreHistory(); }
 }
 
-// 🔥 อัปเกรดการถามรหัสผ่าน (Admin PIN)
 async function openAdminTab() {
     const { value: pin } = await Swal.fire({
         title: '🔒 Administrator',
@@ -144,51 +137,68 @@ function loadDashboard() {
             const d = res.data;
             currentDashboardData = d; 
 
-            // 🎯 การคำนวณ Dashboard 3 มิติ (Leading Indicator)
             const targetOutcome = 317; 
             const targetLeads = 1057;  
             
-            let totalLeadsInHand = 0; 
-            let totalTracked = 0;     
-
-            // 1. รวมยอดจาก CSV ตรีเพชร (15 กลุ่ม)
+            // แยกยอด Leads ระหว่าง 2 แหล่ง
+            let totalTripetchLeads = 0; 
+            let totalTrackedTripetch = 0;
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
-                    totalLeadsInHand += item.target; 
-                    totalTracked += item.tracked;    
+                    totalTripetchLeads += item.target; 
+                    totalTrackedTripetch += item.tracked;    
                 });
             }
 
-            // 2. รวมยอดจาก "รายชื่อเสริม" (Extra Leads สีเขียว) ที่เพิ่มเข้ามาใหม่
+            let totalExtraLeads = 0;
+            let totalTrackedExtra = 0;
             if (d.extraLeads && d.extraLeads.length > 0) {
                 d.extraLeads.forEach(item => {
-                    totalLeadsInHand += item.target; 
-                    totalTracked += item.tracked;
+                    totalExtraLeads += item.target; 
+                    totalTrackedExtra += item.tracked;
                 });
             }
 
-            // --- มิติ 1 ฐานข้อมูล (Leads) ---
+            // --- 🌟 อัปเดต % ลงในกล่องใต้กราฟแท่ง ---
+            let tpKanPct = totalTripetchLeads > 0 ? ((d.kannikaBreakdown.tripetch / totalTripetchLeads) * 100).toFixed(1) : 0;
+            let tpRuePct = totalTripetchLeads > 0 ? ((d.ruangsiriBreakdown.tripetch / totalTripetchLeads) * 100).toFixed(1) : 0;
+            let tpTotalPct = totalTripetchLeads > 0 ? (((d.kannikaBreakdown.tripetch + d.ruangsiriBreakdown.tripetch) / totalTripetchLeads) * 100).toFixed(1) : 0;
+
+            document.getElementById('pct_tp_total').innerText = tpTotalPct + '%';
+            document.getElementById('pct_tp_kan').innerText = tpKanPct + '%';
+            document.getElementById('pct_tp_rue').innerText = tpRuePct + '%';
+
+            let exKanPct = totalExtraLeads > 0 ? ((d.kannikaBreakdown.extra / totalExtraLeads) * 100).toFixed(1) : 0;
+            let exRuePct = totalExtraLeads > 0 ? ((d.ruangsiriBreakdown.extra / totalExtraLeads) * 100).toFixed(1) : 0;
+            let exTotalPct = totalExtraLeads > 0 ? (((d.kannikaBreakdown.extra + d.ruangsiriBreakdown.extra) / totalExtraLeads) * 100).toFixed(1) : 0;
+
+            document.getElementById('pct_ex_total').innerText = exTotalPct + '%';
+            document.getElementById('pct_ex_kan').innerText = exKanPct + '%';
+            document.getElementById('pct_ex_rue').innerText = exRuePct + '%';
+            // ----------------------------------------
+
+            // --- คำนวณยอดรวม 3 มิติ ---
+            let totalLeadsInHand = totalTripetchLeads + totalExtraLeads; 
+            let totalTracked = totalTrackedTripetch + totalTrackedExtra;
+
             let leadPct = Math.round((totalLeadsInHand / targetLeads) * 100);
             if (leadPct > 100) leadPct = 100;
             document.getElementById('label_lead_percent').innerText = leadPct + '%';
             document.getElementById('bar_lead_flow').style.width = leadPct + '%';
             document.getElementById('text_lead_total').innerText = `มีรายชื่อในมือ: ${totalLeadsInHand.toLocaleString()} / 1,057 รายการ`;
 
-            // --- มิติ 2 ความพยายาม (Effort/Action) ---
             let effortPct = totalLeadsInHand > 0 ? Math.round((totalTracked / totalLeadsInHand) * 100) : 0;
             if (effortPct > 100) effortPct = 100;
             document.getElementById('label_effort_percent').innerText = effortPct + '%';
             document.getElementById('bar_effort_flow').style.width = effortPct + '%';
             document.getElementById('text_effort_total').innerText = `โทรแล้ว: ${totalTracked.toLocaleString()} / ${totalLeadsInHand.toLocaleString()} รายการ`;
 
-            // --- มิติ 3 ผลลัพธ์สุทธิ (Outcome/Result) ---
             let outcomePct = Math.round((d.current / targetOutcome) * 100);
             if (outcomePct > 100) outcomePct = 100;
             document.getElementById('label_outcome_percent').innerText = outcomePct + '%';
             document.getElementById('bar_outcome_flow').style.width = outcomePct + '%';
             document.getElementById('text_outcome_total').innerText = `เข้าจริงจากนัดหมาย: ${d.current.toLocaleString()} / 317 คัน`;
 
-            // --- 💡 กำหนดข้อความ Motivation ตาม 3 มิติ ---
             let motivationText = "";
             if(outcomePct >= 100) {
                 motivationText = "🏆 ยอดเยี่ยมเหนือความคาดหมาย! ผลงานรถเข้าศูนย์ทะลุเป้าหมาย 317 คันแล้ว ขอเสียงปรบมือให้ทีม CR ครับ 🎉"; 
@@ -206,7 +216,6 @@ function loadDashboard() {
             }
             document.getElementById('dash_motivation').innerHTML = motivationText;
 
-            // อัปเดตข้อมูลจิปาถะ และกราฟต่างๆ
             document.getElementById('update_kannika').innerText = d.lastUpdateKannika;
             document.getElementById('update_ruangsiri').innerText = d.lastUpdateRuangsiri;
 
@@ -228,18 +237,20 @@ function loadDashboard() {
                 }
             });
 
+            // 🌟 เพิ่มสัดส่วนที่ 4 (ฐานข้อมูลเสริม) ลงในกราฟวงกลม
             const typeCtx = document.getElementById('typeChart').getContext('2d');
-            const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); 
-            const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); 
-            const donutGrad3 = createGradient(typeCtx, '#38bdf8', '#0369a1'); 
-            const donutGradients = [donutGrad1, donutGrad2, donutGrad3];
+            const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); // เขียว
+            const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); // ส้ม
+            const donutGrad3 = createGradient(typeCtx, '#38bdf8', '#0369a1'); // ฟ้า
+            const donutGrad4 = createGradient(typeCtx, '#a78bfa', '#5b21b6'); // ม่วง
+            const donutGradients = [donutGrad1, donutGrad2, donutGrad3, donutGrad4];
 
             if (typeChartInstance) typeChartInstance.destroy();
             typeChartInstance = new Chart(typeCtx, {
                 type: 'doughnut',
                 data: { 
-                    labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง ', 'ได้รับการแนะนำ'], 
-                    datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] 
+                    labels: ['ระบบตรีเพชร', 'ลูกค้าติดต่อเอง', 'ได้รับการแนะนำ', 'ฐานข้อมูลเสริม'], 
+                    datasets: [{ data: [d.breakdown.tripetch, d.breakdown.inbound, d.breakdown.referral, d.breakdown.extra], backgroundColor: donutGradients, borderWidth: 2 }] 
                 },
                 options: { 
                     responsive: true, maintainAspectRatio: false, cutout: '55%', 
@@ -250,15 +261,10 @@ function loadDashboard() {
                 }
             });
 
-            // ==========================================
-            // 🌟 วาดการ์ดทั้งหมดให้เรียงต่อกันในกล่องเดียว 🌟
-            // ==========================================
             let finalCardsHtml = '';
-            
             let lastUpdateBadge = d.csvLastUpdate && d.csvLastUpdate !== '-' ? `<span style="font-size: 12px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 12px; font-weight: normal; margin-left: 10px; border: 1px solid #bbdefb;"><i class="fas fa-history"></i> ล่าสุด: ${d.csvLastUpdate}</span>` : '';
             finalCardsHtml += `<div style="grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; margin-bottom:10px;"><h3 style="color:#0d47a1; margin: 0;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3>${lastUpdateBadge}</div>`;
 
-            // 1. วาดการ์ด CSV แบบเก่า (สีฟ้า/เทา)
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
                     const needToCall = item.tracked + item.untracked; 
@@ -287,7 +293,6 @@ function loadDashboard() {
                 finalCardsHtml += '<p style="grid-column: 1 / -1; text-align:center; color:#777; padding: 40px; background: #fff; border: 1px dashed #ccc; border-radius: 10px; margin-bottom: 20px;">⚠️ ผู้ดูแลระบบยังไม่ได้อัปโหลดฐานข้อมูลการติดตามลูกค้าในเดือนนี้</p>'; 
             }
 
-            // 2. วาดการ์ด Extra Leads ที่แอดมินเพิ่งเพิ่มเข้ามา (สีเขียว)
             if (d.extraLeads && d.extraLeads.length > 0) {
                 d.extraLeads.forEach(item => {
                     const needToCall = item.tracked + item.untracked; 
@@ -312,7 +317,6 @@ function loadDashboard() {
                 });
             }
             
-            // 3. เติมการ์ด ปุ่ม "+" ต่อท้ายสุดเสมอ
             finalCardsHtml += `
             <div class="csv-card" style="border: 2px dashed #4caf50; background: #f1f8e9; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; min-height: 200px; transition: 0.2s;" onclick="openExtraLeadModal()" onmouseover="this.style.background='#e8f5e9'; this.style.transform='translateY(-3px)';" onmouseout="this.style.background='#f1f8e9'; this.style.transform='translateY(0)';">
                 <i class="fas fa-plus-circle" style="font-size: 40px; color: #2e7d32; margin-bottom: 15px;"></i>
@@ -340,19 +344,20 @@ function openBreakdownModal() {
         const dGrad1 = createGradient(kanCtx, '#34d399', '#047857'); 
         const dGrad2 = createGradient(kanCtx, '#fbbf24', '#b45309'); 
         const dGrad3 = createGradient(kanCtx, '#38bdf8', '#0369a1'); 
-        const donutGradients = [dGrad1, dGrad2, dGrad3];
+        const dGrad4 = createGradient(kanCtx, '#a78bfa', '#5b21b6'); 
+        const donutGradients = [dGrad1, dGrad2, dGrad3, dGrad4];
 
         if (kannikaChartInstance) kannikaChartInstance.destroy();
         kannikaChartInstance = new Chart(kanCtx, { 
             type: 'doughnut', 
-            data: { labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง ', 'ได้รับการแนะนำ'], datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
+            data: { labels: ['ระบบตรีเพชร', 'ลูกค้าติดต่อเอง', 'ได้รับการแนะนำ', 'ฐานข้อมูลเสริม'], datasets: [{ data: [d.kannikaBreakdown.tripetch, d.kannikaBreakdown.inbound, d.kannikaBreakdown.referral, d.kannikaBreakdown.extra], backgroundColor: donutGradients, borderWidth: 2 }] }, 
             options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } } } 
         });
         
         if (ruangsiriChartInstance) ruangsiriChartInstance.destroy();
         ruangsiriChartInstance = new Chart(ruangCtx, { 
             type: 'doughnut', 
-            data: { labels: ['รายชื่อจากระบบตรีเพชร', 'ลูกค้าติดต่อรับบริการด้วยตนเอง ', 'ได้รับการแนะนำ'], datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral], backgroundColor: donutGradients, borderWidth: 2 }] }, 
+            data: { labels: ['ระบบตรีเพชร', 'ลูกค้าติดต่อเอง', 'ได้รับการแนะนำ', 'ฐานข้อมูลเสริม'], datasets: [{ data: [d.ruangsiriBreakdown.tripetch, d.ruangsiriBreakdown.inbound, d.ruangsiriBreakdown.referral, d.ruangsiriBreakdown.extra], backgroundColor: donutGradients, borderWidth: 2 }] }, 
             options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, font: { size: 12 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, textAlign: 'center', textShadowBlur: 4, textShadowColor: 'rgba(0,0,0,0.3)', formatter: donutFormatter } } } 
         });
     }, 100);
@@ -369,7 +374,8 @@ function calculateTotal() {
     const tripetch = parseInt(document.getElementById('type_tripetch').value) || 0;
     const inbound = parseInt(document.getElementById('type_inbound').value) || 0;
     const referral = parseInt(document.getElementById('type_referral').value) || 0;
-    document.getElementById('type_total').value = tripetch + inbound + referral;
+    const extra = parseInt(document.getElementById('type_extra').value) || 0;
+    document.getElementById('type_total').value = tripetch + inbound + referral + extra;
 }
 
 function saveRecord() {
@@ -387,6 +393,7 @@ function saveRecord() {
             tripetch: parseInt(document.getElementById('type_tripetch').value) || 0, 
             inbound: parseInt(document.getElementById('type_inbound').value) || 0, 
             referral: parseInt(document.getElementById('type_referral').value) || 0, 
+            extra_leads: parseInt(document.getElementById('type_extra').value) || 0,
             total: tot 
         };
         
@@ -400,6 +407,7 @@ function saveRecord() {
                 document.getElementById('type_tripetch').value = 0; 
                 document.getElementById('type_inbound').value = 0; 
                 document.getElementById('type_referral').value = 0; 
+                document.getElementById('type_extra').value = 0; 
                 calculateTotal(); 
                 
                 loadRecentRecords();
@@ -435,7 +443,7 @@ function loadRecentRecords() {
     const month = mEl ? mEl.value : String(new Date().getMonth() + 1).padStart(2, '0');
     const year = yEl ? yEl.value : new Date().getFullYear();
     
-    document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;"><div class="spinner-small"></div> กำลังโหลดข้อมูลประวัติ...</td></tr>';
+    document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px; color: #777;"><div class="spinner-small"></div> กำลังโหลดข้อมูลประวัติ...</td></tr>';
     
     fetch(`${API_URL}?action=get_recent_records&month=${month}&year=${year}`)
     .then(r => r.json())
@@ -444,11 +452,11 @@ function loadRecentRecords() {
             recentRecordsList = res.data;
             applyRecordFilters(); 
         } else {
-            document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">ไม่พบข้อมูลประวัติในระบบ</td></tr>';
+            document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px; color: #777;">ไม่พบข้อมูลประวัติในระบบ</td></tr>';
             if (document.getElementById('recordPagination')) document.getElementById('recordPagination').innerHTML = '';
         }
     }).catch(e => {
-        document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #d32f2f;">เครือข่ายขัดข้อง โหลดข้อมูลประวัติล้มเหลว</td></tr>';
+        document.getElementById('recentRecordsTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px; color: #d32f2f;">เครือข่ายขัดข้อง โหลดข้อมูลประวัติล้มเหลว</td></tr>';
     });
 }
 
@@ -471,7 +479,7 @@ function renderRecentRecords() {
     const tbody = document.getElementById('recentRecordsTableBody');
     
     if(filteredRecordsList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">ไม่พบประวัติการบันทึกงานตามเงื่อนไขที่เลือก</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px; color: #777;">ไม่พบประวัติการบันทึกงานตามเงื่อนไขที่เลือก</td></tr>';
         if (document.getElementById('recordPagination')) document.getElementById('recordPagination').innerHTML = '';
         return;
     }
@@ -496,6 +504,7 @@ function renderRecentRecords() {
             <td>${rec.tripetch}</td>
             <td>${rec.inbound}</td>
             <td>${rec.referral}</td>
+            <td><b style="color:#2e7d32;">${rec.extra_leads || 0}</b></td>
             <td><b style="color:#1565c0;">${rec.total}</b></td>
             <td>
                 <button class="btn-sm" onclick="openEditRecordModal('${rec.id}')" title="แก้ไข"><i class="fas fa-edit"></i></button>
@@ -559,6 +568,7 @@ function openEditRecordModal(id) {
     document.getElementById('edit_type_tripetch').value = rec.tripetch;
     document.getElementById('edit_type_inbound').value = rec.inbound;
     document.getElementById('edit_type_referral').value = rec.referral;
+    document.getElementById('edit_type_extra').value = rec.extra_leads || 0;
     document.getElementById('edit_type_total').value = rec.total;
     
     document.getElementById('editRecordModal').style.display = 'flex';
@@ -572,7 +582,8 @@ function calculateEditTotal() {
     const tripetch = parseInt(document.getElementById('edit_type_tripetch').value) || 0;
     const inbound = parseInt(document.getElementById('edit_type_inbound').value) || 0;
     const referral = parseInt(document.getElementById('edit_type_referral').value) || 0;
-    document.getElementById('edit_type_total').value = tripetch + inbound + referral;
+    const extra = parseInt(document.getElementById('edit_type_extra').value) || 0;
+    document.getElementById('edit_type_total').value = tripetch + inbound + referral + extra;
 }
 
 function saveEditRecord() {
@@ -582,6 +593,7 @@ function saveEditRecord() {
     const tp = parseInt(document.getElementById('edit_type_tripetch').value) || 0;
     const ib = parseInt(document.getElementById('edit_type_inbound').value) || 0;
     const rf = parseInt(document.getElementById('edit_type_referral').value) || 0;
+    const ex = parseInt(document.getElementById('edit_type_extra').value) || 0;
     const tot = parseInt(document.getElementById('edit_type_total').value) || 0;
 
     if (!date) return Swal.fire({ icon: 'warning', text: 'กรุณาระบุวันที่' });
@@ -591,7 +603,7 @@ function saveEditRecord() {
         method: 'POST',
         body: JSON.stringify({
             action: 'edit_record', id: id, cr_name: crName, date: date, 
-            tripetch: tp, inbound: ib, referral: rf, total: tot
+            tripetch: tp, inbound: ib, referral: rf, extra_leads: ex, total: tot
         })
     })
     .then(r => r.json())
@@ -636,10 +648,8 @@ function loadScoreHistory() {
                 if(!seen.has(key)) { seen.add(key); uniqueHistory.push(h); }
             });
 
-            // 🌟 1. เก็บประวัติทั้งหมดไว้ในตัวแปร Global
             allScoreHistory = uniqueHistory;
 
-            // 🌟 2. ดึงชื่อหัวข้อที่มีคนสอบแล้ว มาใส่ในตัวกรอง (Dropdown) อัตโนมัติ
             const topicFilter = document.getElementById('filter_quiz_topic');
             const uniqueTopics = [...new Set(allScoreHistory.map(item => item.topic))];
             let topicOptions = '<option value="all">📖 ทุกหัวข้อ</option>';
@@ -648,13 +658,11 @@ function loadScoreHistory() {
             });
             if(topicFilter) topicFilter.innerHTML = topicOptions;
 
-            // 🌟 3. สั่งให้แสดงผลตามตัวกรองปัจจุบัน (เริ่มต้นคือทั้งหมด)
             filterScoreHistory();
         }
     });
 }
 
-// 🌟 ฟังก์ชันใหม่: กรองประวัติคะแนนสอบ
 function filterScoreHistory() {
     const nameFilter = document.getElementById('filter_quiz_name').value;
     const topicFilter = document.getElementById('filter_quiz_topic').value;
@@ -668,10 +676,8 @@ function filterScoreHistory() {
     renderScoreHistory(filteredList);
 }
 
-// 🌟 ฟังก์ชันใหม่: วาดกล่องประวัติคะแนนสอบ
 function renderScoreHistory(dataList) {
     let html = '';
-    // โชว์สูงสุด 20 รายการล่าสุด เพื่อไม่ให้หน้ายาวเกินไป
     dataList.slice(0, 20).forEach(h => {
         let scoreClass = (h.score/h.full >= 0.8) ? '#10b981' : (h.score/h.full >= 0.5 ? '#f59e0b' : '#ef4444');
         html += `
@@ -968,7 +974,6 @@ function uploadCSV() {
     });
 }
 
-// 🌟 ฟังก์ชันจัดการ Extra Leads (ฐานข้อมูลเสริม) 🌟
 function openExtraLeadModal() {
     document.getElementById('extraLeadModal').style.display = 'flex';
 }
@@ -1011,7 +1016,7 @@ function saveExtraLead() {
             document.getElementById('extra_sheet_url').value = '';
             document.getElementById('extra_sheet_name').value = '';
             closeExtraLeadModal();
-            loadDashboard(); // รีเฟรชแดชบอร์ดเพื่อให้การ์ดสีเขียวขึ้น
+            loadDashboard(); 
         } else {
             Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: res.message });
         }
