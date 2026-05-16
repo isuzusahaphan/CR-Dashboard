@@ -100,11 +100,12 @@
                             <span style="color: #1d4ed8;"><i class="fas fa-phone-alt"></i> การติดตาม (Action)</span>
                             <span id="label_effort_percent" style="color: #1d4ed8;">0%</span>
                         </div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" id="bar_effort_flow" style="background: linear-gradient(90deg, #60a5fa, #2563eb); width: 0%;"></div>
+                        <div class="progress-bar-bg" style="display: flex;">
+                            <div class="progress-bar-fill" id="bar_effort_flow" style="background: linear-gradient(90deg, #60a5fa, #2563eb); width: 0%; border-radius: 0;" data-tooltip="สายที่โทรแล้ว"></div>
+                            <div class="progress-bar-fill" id="bar_effort_pre" style="background: linear-gradient(90deg, #6ee7b7, #10b981); width: 0%; border-radius: 0;" data-tooltip="เข้าก่อนติดตาม (ไม่ต้องโทร)"></div>
                         </div>
                         <div class="summary-footer">
-                            <span id="text_effort_total">โทรแล้ว: 0 / 0 คัน</span>
+                            <span id="text_effort_total" style="font-size: 12.5px;">โทรแล้ว: 0 | เข้าก่อน: 0 / 0 รายการ</span>
                         </div>
                     </div>
 
@@ -248,7 +249,8 @@
                                     <th>ตรีเพชร</th>
                                     <th>Inbound</th>
                                     <th>แนะนำ</th>
-                                    <th>ข้อมูลเสริม</th> <th>ยอดรวม</th>
+                                    <th>ข้อมูลเสริม</th>
+                                    <th>ยอดรวม</th>
                                     <th>จัดการ</th>
                                 </tr>
                             </thead>
