@@ -142,7 +142,7 @@ function loadDashboard() {
             
             // แยกยอด Leads ระหว่าง 2 แหล่ง
             let totalTripetchLeads = 0; 
-            let totalTrackedTripetch = 0;
+            let totalTrackedTripetch = 0; // ยอดโทรจริงของตรีเพชร
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
                     totalTripetchLeads += item.target; 
@@ -151,7 +151,7 @@ function loadDashboard() {
             }
 
             let totalExtraLeads = 0;
-            let totalTrackedExtra = 0;
+            let totalTrackedExtra = 0; // ยอดโทรจริงของฐานข้อมูลเสริม
             if (d.extraLeads && d.extraLeads.length > 0) {
                 d.extraLeads.forEach(item => {
                     totalExtraLeads += item.target; 
@@ -159,18 +159,18 @@ function loadDashboard() {
                 });
             }
 
-            // --- 🌟 อัปเดต % ลงในกล่องใต้กราฟแท่ง ---
-            let tpKanPct = totalTripetchLeads > 0 ? ((d.kannikaBreakdown.tripetch / totalTripetchLeads) * 100).toFixed(1) : 0;
-            let tpRuePct = totalTripetchLeads > 0 ? ((d.ruangsiriBreakdown.tripetch / totalTripetchLeads) * 100).toFixed(1) : 0;
-            let tpTotalPct = totalTripetchLeads > 0 ? (((d.kannikaBreakdown.tripetch + d.ruangsiriBreakdown.tripetch) / totalTripetchLeads) * 100).toFixed(1) : 0;
+            // --- 🌟 อัปเดต % ลงในกล่องใต้กราฟแท่ง (หารด้วยยอดที่โทรแล้วจริง) ---
+            let tpKanPct = totalTrackedTripetch > 0 ? ((d.kannikaBreakdown.tripetch / totalTrackedTripetch) * 100).toFixed(1) : 0;
+            let tpRuePct = totalTrackedTripetch > 0 ? ((d.ruangsiriBreakdown.tripetch / totalTrackedTripetch) * 100).toFixed(1) : 0;
+            let tpTotalPct = totalTrackedTripetch > 0 ? (((d.kannikaBreakdown.tripetch + d.ruangsiriBreakdown.tripetch) / totalTrackedTripetch) * 100).toFixed(1) : 0;
 
             document.getElementById('pct_tp_total').innerText = tpTotalPct + '%';
             document.getElementById('pct_tp_kan').innerText = tpKanPct + '%';
             document.getElementById('pct_tp_rue').innerText = tpRuePct + '%';
 
-            let exKanPct = totalExtraLeads > 0 ? ((d.kannikaBreakdown.extra / totalExtraLeads) * 100).toFixed(1) : 0;
-            let exRuePct = totalExtraLeads > 0 ? ((d.ruangsiriBreakdown.extra / totalExtraLeads) * 100).toFixed(1) : 0;
-            let exTotalPct = totalExtraLeads > 0 ? (((d.kannikaBreakdown.extra + d.ruangsiriBreakdown.extra) / totalExtraLeads) * 100).toFixed(1) : 0;
+            let exKanPct = totalTrackedExtra > 0 ? ((d.kannikaBreakdown.extra / totalTrackedExtra) * 100).toFixed(1) : 0;
+            let exRuePct = totalTrackedExtra > 0 ? ((d.ruangsiriBreakdown.extra / totalTrackedExtra) * 100).toFixed(1) : 0;
+            let exTotalPct = totalTrackedExtra > 0 ? (((d.kannikaBreakdown.extra + d.ruangsiriBreakdown.extra) / totalTrackedExtra) * 100).toFixed(1) : 0;
 
             document.getElementById('pct_ex_total').innerText = exTotalPct + '%';
             document.getElementById('pct_ex_kan').innerText = exKanPct + '%';
@@ -237,7 +237,6 @@ function loadDashboard() {
                 }
             });
 
-            // 🌟 เพิ่มสัดส่วนที่ 4 (ฐานข้อมูลเสริม) ลงในกราฟวงกลม
             const typeCtx = document.getElementById('typeChart').getContext('2d');
             const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); // เขียว
             const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); // ส้ม
