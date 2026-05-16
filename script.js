@@ -140,18 +140,20 @@ function loadDashboard() {
             const targetOutcome = 317; 
             const targetLeads = 1057;  
             
-            // แยกยอด Leads ระหว่าง 2 แหล่ง
+            // 🌟 แยกยอด Leads ระหว่าง 2 แหล่ง
             let totalTripetchLeads = 0; 
-            let totalTrackedTripetch = 0; // ยอดโทรจริงของตรีเพชร
+            let totalTrackedTripetch = 0; 
+            let totalPreService = 0; // ยอดรวมเข้าก่อนติดตามทั้งหมด
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
                     totalTripetchLeads += item.target; 
-                    totalTrackedTripetch += item.tracked;    
+                    totalTrackedTripetch += item.tracked;
+                    totalPreService += item.preService; // ดึงยอดเข้าก่อนติดตามมารวมกัน
                 });
             }
 
             let totalExtraLeads = 0;
-            let totalTrackedExtra = 0; // ยอดโทรจริงของฐานข้อมูลเสริม
+            let totalTrackedExtra = 0; 
             if (d.extraLeads && d.extraLeads.length > 0) {
                 d.extraLeads.forEach(item => {
                     totalExtraLeads += item.target; 
@@ -159,7 +161,7 @@ function loadDashboard() {
                 });
             }
 
-            // --- 🌟 อัปเดต % ลงในกล่องใต้กราฟแท่ง (หารด้วยยอดที่โทรแล้วจริง) ---
+            // --- 🌟 อัปเดต % ลงในกล่องใต้กราฟแท่ง (ใช้ยอดโทรแล้วจริงเป็นตัวหาร) ---
             let tpKanPct = totalTrackedTripetch > 0 ? ((d.kannikaBreakdown.tripetch / totalTrackedTripetch) * 100).toFixed(1) : 0;
             let tpRuePct = totalTrackedTripetch > 0 ? ((d.ruangsiriBreakdown.tripetch / totalTrackedTripetch) * 100).toFixed(1) : 0;
             let tpTotalPct = totalTrackedTripetch > 0 ? (((d.kannikaBreakdown.tripetch + d.ruangsiriBreakdown.tripetch) / totalTrackedTripetch) * 100).toFixed(1) : 0;
@@ -175,36 +177,50 @@ function loadDashboard() {
             document.getElementById('pct_ex_total').innerText = exTotalPct + '%';
             document.getElementById('pct_ex_kan').innerText = exKanPct + '%';
             document.getElementById('pct_ex_rue').innerText = exRuePct + '%';
-            // ----------------------------------------
 
             // --- คำนวณยอดรวม 3 มิติ ---
             let totalLeadsInHand = totalTripetchLeads + totalExtraLeads; 
             let totalTracked = totalTrackedTripetch + totalTrackedExtra;
 
+            // มิติที่ 1: ฐานข้อมูล (Leads)
             let leadPct = Math.round((totalLeadsInHand / targetLeads) * 100);
             if (leadPct > 100) leadPct = 100;
             document.getElementById('label_lead_percent').innerText = leadPct + '%';
             document.getElementById('bar_lead_flow').style.width = leadPct + '%';
             document.getElementById('text_lead_total').innerText = `มีรายชื่อในมือ: ${totalLeadsInHand.toLocaleString()} / 1,057 รายการ`;
 
-            let effortPct = totalLeadsInHand > 0 ? Math.round((totalTracked / totalLeadsInHand) * 100) : 0;
-            if (effortPct > 100) effortPct = 100;
-            document.getElementById('label_effort_percent').innerText = effortPct + '%';
-            document.getElementById('bar_effort_flow').style.width = effortPct + '%';
-            document.getElementById('text_effort_total').innerText = `โทรแล้ว: ${totalTracked.toLocaleString()} / ${totalLeadsInHand.toLocaleString()} รายการ`;
+            // มิติที่ 2: การติดตาม (Action) แบบ 2 สีรวมกัน (โทรแล้ว + เข้าก่อน)
+            let effortTrackedPct = totalLeadsInHand > 0 ? (totalTracked / totalLeadsInHand) * 100 : 0;
+            let effortPrePct = totalLeadsInHand > 0 ? (totalPreService / totalLeadsInHand) * 100 : 0;
+            
+            // ป้องกันหลอดทะลุ 100% ถ้าตัวเลขเกิน
+            if (effortTrackedPct + effortPrePct > 100) {
+                let overflow = (effortTrackedPct + effortPrePct) - 100;
+                effortPrePct -= overflow; 
+            }
 
+            let totalEffortDisplayPct = Math.round(effortTrackedPct + effortPrePct);
+            if (totalEffortDisplayPct > 100) totalEffortDisplayPct = 100;
+
+            document.getElementById('label_effort_percent').innerText = totalEffortDisplayPct + '%';
+            document.getElementById('bar_effort_flow').style.width = effortTrackedPct + '%';
+            document.getElementById('bar_effort_pre').style.width = effortPrePct + '%';
+            document.getElementById('text_effort_total').innerText = `โทรแล้ว: ${totalTracked.toLocaleString()} | เข้าก่อน: ${totalPreService.toLocaleString()} / ${totalLeadsInHand.toLocaleString()} รายการ`;
+
+            // มิติที่ 3: รถเข้าศูนย์ (Result)
             let outcomePct = Math.round((d.current / targetOutcome) * 100);
             if (outcomePct > 100) outcomePct = 100;
             document.getElementById('label_outcome_percent').innerText = outcomePct + '%';
             document.getElementById('bar_outcome_flow').style.width = outcomePct + '%';
             document.getElementById('text_outcome_total').innerText = `เข้าจริงจากนัดหมาย: ${d.current.toLocaleString()} / 317 คัน`;
 
+            // Motivation Text อิงจากยอดรวม Action แบบใหม่
             let motivationText = "";
             if(outcomePct >= 100) {
                 motivationText = "🏆 ยอดเยี่ยมเหนือความคาดหมาย! ผลงานรถเข้าศูนย์ทะลุเป้าหมาย 317 คันแล้ว ขอเสียงปรบมือให้ทีม CR ครับ 🎉"; 
                 if(!hasCelebratedCR100) { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 3000 }); hasCelebratedCR100 = true; }
-            } else if (effortPct >= 100) {
-                motivationText = "🔥 ความพยายามสุดยอดมาก! โทรติดตามลูกค้าครบทุกรายชื่อในมือแล้ว รอรับผลลัพธ์ที่สวยงามได้เลย 🚀";
+            } else if (totalEffortDisplayPct >= 100) {
+                motivationText = "🔥 ความพยายามสุดยอดมาก! เคลียร์รายชื่อในมือสำเร็จครบ 100% แล้ว รอรับผลลัพธ์ที่สวยงามได้เลย 🚀";
                 hasCelebratedCR100 = false;
             } else if (totalLeadsInHand < targetLeads) {
                 let shortage = targetLeads - totalLeadsInHand;
@@ -219,6 +235,7 @@ function loadDashboard() {
             document.getElementById('update_kannika').innerText = d.lastUpdateKannika;
             document.getElementById('update_ruangsiri').innerText = d.lastUpdateRuangsiri;
 
+            // กราฟแท่ง
             const barCtx = document.getElementById('crChart').getContext('2d');
             const barGradKannika = createGradient(barCtx, '#4ade80', '#15803d'); 
             const barGradRuangsiri = createGradient(barCtx, '#60a5fa', '#1d4ed8'); 
@@ -237,6 +254,7 @@ function loadDashboard() {
                 }
             });
 
+            // กราฟวงกลม
             const typeCtx = document.getElementById('typeChart').getContext('2d');
             const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); // เขียว
             const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); // ส้ม
@@ -260,22 +278,33 @@ function loadDashboard() {
                 }
             });
 
+            // 🌟 วาดกล่อง CSV Cards ให้รองรับ 2 สี
             let finalCardsHtml = '';
             let lastUpdateBadge = d.csvLastUpdate && d.csvLastUpdate !== '-' ? `<span style="font-size: 12px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 12px; font-weight: normal; margin-left: 10px; border: 1px solid #bbdefb;"><i class="fas fa-history"></i> ล่าสุด: ${d.csvLastUpdate}</span>` : '';
             finalCardsHtml += `<div style="grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; margin-bottom:10px;"><h3 style="color:#0d47a1; margin: 0;"><i class="fas fa-headset" style="color:#1565c0;"></i> สรุปสถานะการติดตามลูกค้า (อัปเดตจากตรีเพชร)</h3>${lastUpdateBadge}</div>`;
 
             if (d.csvData && d.csvData.length > 0) {
                 d.csvData.forEach(item => {
-                    const needToCall = item.tracked + item.untracked; 
-                    let actualPercent = needToCall === 0 ? 100 : Math.round((item.tracked / needToCall) * 100);
+                    let target = item.target > 0 ? item.target : (item.tracked + item.untracked + item.preService);
+                    if (target === 0) target = 1; // กัน error หาร 0
+
+                    let trackedPct = (item.tracked / target) * 100;
+                    let prePct = (item.preService / target) * 100;
+                    
+                    if(trackedPct + prePct > 100) { prePct = 100 - trackedPct; }
+                    
+                    let actualPercent = Math.round(trackedPct + prePct);
+                    if (actualPercent > 100) actualPercent = 100;
+
                     finalCardsHtml += `
                     <div class="csv-card">
                         <div class="csv-title">${item.group}</div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
                             <span style="color:#555;">ความคืบหน้าการโทร</span><span style="color:#1565c0; font-weight:bold;">${actualPercent}%</span>
                         </div>
-                        <div style="width:100%; background:#e0e0e0; height:12px; border-radius:6px; overflow:hidden; margin-bottom:15px;">
-                            <div style="width:${actualPercent}%; background:linear-gradient(90deg, #1976d2, #4fc3f7); height:100%; transition: width 1s;"></div>
+                        <div style="width:100%; background:#e0e0e0; height:12px; border-radius:6px; overflow:hidden; margin-bottom:15px; display: flex;">
+                            <div style="width:${trackedPct}%; background:linear-gradient(90deg, #1976d2, #4fc3f7); height:100%; transition: width 1s;" data-tooltip="โทรแล้ว"></div>
+                            <div style="width:${prePct}%; background:linear-gradient(90deg, #6ee7b7, #10b981); height:100%; transition: width 1s;" data-tooltip="เข้าก่อนติดตาม"></div>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:13px; color:#555; background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:5px;">
                             <span>🎯 เป้าหมายกลุ่ม:</span><b>${item.target} คัน</b>
@@ -294,8 +323,12 @@ function loadDashboard() {
 
             if (d.extraLeads && d.extraLeads.length > 0) {
                 d.extraLeads.forEach(item => {
-                    const needToCall = item.tracked + item.untracked; 
-                    let actualPercent = needToCall === 0 ? 100 : Math.round((item.tracked / needToCall) * 100);
+                    let target = item.target > 0 ? item.target : (item.tracked + item.untracked);
+                    if(target === 0) target = 1;
+                    
+                    let actualPercent = Math.round((item.tracked / target) * 100);
+                    if (actualPercent > 100) actualPercent = 100;
+
                     finalCardsHtml += `
                     <div class="csv-card" style="border: 2px solid #81c784; background: #f1f8e9;">
                         <div class="csv-title" style="color: #2e7d32;"><i class="fas fa-link"></i> ${item.sheetName}</div>
