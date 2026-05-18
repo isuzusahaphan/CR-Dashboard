@@ -35,6 +35,14 @@
         .box-effort { border-left: 5px solid #3b82f6; }
         .box-outcome { border-left: 5px solid #10b981; }
 
+        /* ปรับ Tooltip ให้รองรับข้อความยาวๆ ไม่ให้ตกขอบจอ */
+        [data-tooltip]::after {
+            white-space: normal !important;
+            min-width: 220px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
         @media (min-width: 768px) {
             .dashboard-summary-grid { grid-template-columns: 1fr 1fr 1fr; }
         }
@@ -84,7 +92,10 @@
                     
                     <div class="summary-box box-lead">
                         <div class="summary-label">
-                            <span style="color: #d97706;"><i class="fas fa-database"></i> ฐานข้อมูล (Leads)</span>
+                            <span style="color: #d97706;">
+                                <i class="fas fa-database"></i> ฐานข้อมูล (Leads) 
+                                <i class="fas fa-question-circle" style="color:#94a3b8; font-size:12px; margin-left:4px; cursor:help;" data-tooltip="รายชื่อเป้าหมายที่ต้องโทรทั้งหมด (รวมฐานข้อมูลตรีเพชรและฐานข้อมูลเสริม)"></i>
+                            </span>
                             <span id="label_lead_percent" style="color: #d97706;">0%</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -97,7 +108,10 @@
 
                     <div class="summary-box box-effort">
                         <div class="summary-label">
-                            <span style="color: #1d4ed8;"><i class="fas fa-phone-alt"></i> การติดตาม (Action)</span>
+                            <span style="color: #1d4ed8;">
+                                <i class="fas fa-phone-alt"></i> การติดตาม (Action)
+                                <i class="fas fa-question-circle" style="color:#94a3b8; font-size:12px; margin-left:4px; cursor:help;" data-tooltip="ความคืบหน้าของการโทรทั้งหมด (รวมลูกค้าที่เข้ารับบริการก่อนการติดตามแล้ว)"></i>
+                            </span>
                             <span id="label_effort_percent" style="color: #1d4ed8;">0%</span>
                         </div>
                         <div class="progress-bar-bg" style="display: flex;">
@@ -111,7 +125,10 @@
 
                     <div class="summary-box box-outcome">
                         <div class="summary-label">
-                            <span style="color: #15803d;"><i class="fas fa-car"></i> รถเข้าศูนย์ (Result)</span>
+                            <span style="color: #15803d;">
+                                <i class="fas fa-car"></i> รถเข้าศูนย์ (Result)
+                                <i class="fas fa-question-circle" style="color:#94a3b8; font-size:12px; margin-left:4px; cursor:help;" data-tooltip="จำนวนรถที่เข้ารับบริการจริง เทียบกับเป้าหมายรวมของสาขา"></i>
+                            </span>
                             <span id="label_outcome_percent" style="color: #15803d;">0%</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -135,12 +152,18 @@
                             
                             <div style="margin-top: 15px; font-size: 13px; color: #424242; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                                 <div style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 8px;">
-                                    <b style="color: #1565c0;"><i class="fas fa-chart-line"></i> เทียบเป้าตรีเพชร <span style="font-size: 11px; color: #888; font-weight: normal;">(% นัดสำเร็จจากสายที่โทร)</span>:</b> 
+                                    <b style="color: #1565c0;">
+                                        <i class="fas fa-chart-line"></i> เทียบเป้าตรีเพชร 
+                                        <i class="fas fa-question-circle" style="color:#94a3b8; font-size:12px; margin-left:2px; cursor:help;" data-tooltip="คิดจาก: (ยอดรถเข้าจริง ÷ จำนวนสายที่โทรแล้วของตรีเพชรหาร 2)"></i> :
+                                    </b> 
                                     <span id="pct_tp_total" style="font-weight:bold; color:#1b5e20; font-size: 14px;">0%</span>
                                     <div style="font-size: 11.5px; color:#666; margin-top: 4px;">กรรณิกา: <span id="pct_tp_kan" style="font-weight:600; color:#1565c0;">0%</span> | เรืองศิริ: <span id="pct_tp_rue" style="font-weight:600; color:#1565c0;">0%</span></div>
                                 </div>
                                 <div>
-                                    <b style="color: #2e7d32;"><i class="fas fa-chart-line"></i> เทียบเป้าข้อมูลเสริม <span style="font-size: 11px; color: #888; font-weight: normal;">(% นัดสำเร็จจากสายที่โทร)</span>:</b> 
+                                    <b style="color: #2e7d32;">
+                                        <i class="fas fa-chart-line"></i> เทียบเป้าข้อมูลเสริม 
+                                        <i class="fas fa-question-circle" style="color:#94a3b8; font-size:12px; margin-left:2px; cursor:help;" data-tooltip="คิดจาก: (ยอดรถเข้าจริง ÷ จำนวนสายที่โทรแล้วของข้อมูลเสริมหาร 2)"></i> :
+                                    </b> 
                                     <span id="pct_ex_total" style="font-weight:bold; color:#1b5e20; font-size: 14px;">0%</span>
                                     <div style="font-size: 11.5px; color:#666; margin-top: 4px;">กรรณิกา: <span id="pct_ex_kan" style="font-weight:600; color:#2e7d32;">0%</span> | เรืองศิริ: <span id="pct_ex_rue" style="font-weight:600; color:#2e7d32;">0%</span></div>
                                 </div>
