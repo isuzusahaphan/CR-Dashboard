@@ -160,20 +160,22 @@ function loadDashboard() {
                 });
             }
 
-            // --- 🌟 [อัปเดต] ใส่ตัวเลขดิบเข้าไปในกล่อง % ฝั่งซ้าย ---
+            // --- 🌟 [อัปเดต] คำนวณเปอร์เซ็นต์โดยให้ "ตัวหารของแต่ละคน = ยอดโทรสาขา ÷ 2" ---
+            let tpHalfTracked = totalTrackedTripetch / 2; // ยอดโทรรับผิดชอบคนละครึ่ง (ตรีเพชร)
             let tpTotalIn = d.kannikaBreakdown.tripetch + d.ruangsiriBreakdown.tripetch;
-            let tpKanPct = totalTrackedTripetch > 0 ? ((d.kannikaBreakdown.tripetch / totalTrackedTripetch) * 100).toFixed(1) : 0;
-            let tpRuePct = totalTrackedTripetch > 0 ? ((d.ruangsiriBreakdown.tripetch / totalTrackedTripetch) * 100).toFixed(1) : 0;
             let tpTotalPct = totalTrackedTripetch > 0 ? ((tpTotalIn / totalTrackedTripetch) * 100).toFixed(1) : 0;
+            let tpKanPct = tpHalfTracked > 0 ? ((d.kannikaBreakdown.tripetch / tpHalfTracked) * 100).toFixed(1) : 0;
+            let tpRuePct = tpHalfTracked > 0 ? ((d.ruangsiriBreakdown.tripetch / tpHalfTracked) * 100).toFixed(1) : 0;
 
             document.getElementById('pct_tp_total').innerText = `${tpTotalPct}% (${tpTotalIn}/${totalTrackedTripetch} คัน)`;
             document.getElementById('pct_tp_kan').innerText = `${tpKanPct}% (${d.kannikaBreakdown.tripetch} คัน)`;
             document.getElementById('pct_tp_rue').innerText = `${tpRuePct}% (${d.ruangsiriBreakdown.tripetch} คัน)`;
 
+            let exHalfTracked = totalTrackedExtra / 2; // ยอดโทรรับผิดชอบคนละครึ่ง (ข้อมูลเสริม)
             let exTotalIn = d.kannikaBreakdown.extra + d.ruangsiriBreakdown.extra;
-            let exKanPct = totalTrackedExtra > 0 ? ((d.kannikaBreakdown.extra / totalTrackedExtra) * 100).toFixed(1) : 0;
-            let exRuePct = totalTrackedExtra > 0 ? ((d.ruangsiriBreakdown.extra / totalTrackedExtra) * 100).toFixed(1) : 0;
             let exTotalPct = totalTrackedExtra > 0 ? ((exTotalIn / totalTrackedExtra) * 100).toFixed(1) : 0;
+            let exKanPct = exHalfTracked > 0 ? ((d.kannikaBreakdown.extra / exHalfTracked) * 100).toFixed(1) : 0;
+            let exRuePct = exHalfTracked > 0 ? ((d.ruangsiriBreakdown.extra / exHalfTracked) * 100).toFixed(1) : 0;
 
             document.getElementById('pct_ex_total').innerText = `${exTotalPct}% (${exTotalIn}/${totalTrackedExtra} คัน)`;
             document.getElementById('pct_ex_kan').innerText = `${exKanPct}% (${d.kannikaBreakdown.extra} คัน)`;
@@ -250,10 +252,10 @@ function loadDashboard() {
             });
 
             const typeCtx = document.getElementById('typeChart').getContext('2d');
-            const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); // เขียว
-            const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); // ส้ม
-            const donutGrad3 = createGradient(typeCtx, '#38bdf8', '#0369a1'); // ฟ้า
-            const donutGrad4 = createGradient(typeCtx, '#a78bfa', '#5b21b6'); // ม่วง
+            const donutGrad1 = createGradient(typeCtx, '#34d399', '#047857'); 
+            const donutGrad2 = createGradient(typeCtx, '#fbbf24', '#b45309'); 
+            const donutGrad3 = createGradient(typeCtx, '#38bdf8', '#0369a1'); 
+            const donutGrad4 = createGradient(typeCtx, '#a78bfa', '#5b21b6'); 
             const donutGradients = [donutGrad1, donutGrad2, donutGrad3, donutGrad4];
 
             if (typeChartInstance) typeChartInstance.destroy();
