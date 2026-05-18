@@ -160,8 +160,7 @@ function loadDashboard() {
                 });
             }
 
-            // --- 🌟 [อัปเดต] คำนวณเปอร์เซ็นต์โดยให้ "ตัวหารของแต่ละคน = ยอดโทรสาขา ÷ 2" ---
-            let tpHalfTracked = totalTrackedTripetch / 2; // ยอดโทรรับผิดชอบคนละครึ่ง (ตรีเพชร)
+            let tpHalfTracked = totalTrackedTripetch / 2; 
             let tpTotalIn = d.kannikaBreakdown.tripetch + d.ruangsiriBreakdown.tripetch;
             let tpTotalPct = totalTrackedTripetch > 0 ? ((tpTotalIn / totalTrackedTripetch) * 100).toFixed(1) : 0;
             let tpKanPct = tpHalfTracked > 0 ? ((d.kannikaBreakdown.tripetch / tpHalfTracked) * 100).toFixed(1) : 0;
@@ -171,7 +170,7 @@ function loadDashboard() {
             document.getElementById('pct_tp_kan').innerText = `${tpKanPct}% (${d.kannikaBreakdown.tripetch} คัน)`;
             document.getElementById('pct_tp_rue').innerText = `${tpRuePct}% (${d.ruangsiriBreakdown.tripetch} คัน)`;
 
-            let exHalfTracked = totalTrackedExtra / 2; // ยอดโทรรับผิดชอบคนละครึ่ง (ข้อมูลเสริม)
+            let exHalfTracked = totalTrackedExtra / 2; 
             let exTotalIn = d.kannikaBreakdown.extra + d.ruangsiriBreakdown.extra;
             let exTotalPct = totalTrackedExtra > 0 ? ((exTotalIn / totalTrackedExtra) * 100).toFixed(1) : 0;
             let exKanPct = exHalfTracked > 0 ? ((d.kannikaBreakdown.extra / exHalfTracked) * 100).toFixed(1) : 0;
@@ -180,16 +179,35 @@ function loadDashboard() {
             document.getElementById('pct_ex_total').innerText = `${exTotalPct}% (${exTotalIn}/${totalTrackedExtra} คัน)`;
             document.getElementById('pct_ex_kan').innerText = `${exKanPct}% (${d.kannikaBreakdown.extra} คัน)`;
             document.getElementById('pct_ex_rue').innerText = `${exRuePct}% (${d.ruangsiriBreakdown.extra} คัน)`;
-            // ----------------------------------------
 
             let totalLeadsInHand = totalTripetchLeads + totalExtraLeads; 
             let totalTracked = totalTrackedTripetch + totalTrackedExtra;
 
-            let leadPct = Math.round((totalLeadsInHand / targetLeads) * 100);
-            if (leadPct > 100) leadPct = 100;
-            document.getElementById('label_lead_percent').innerText = leadPct + '%';
-            document.getElementById('bar_lead_flow').style.width = leadPct + '%';
-            document.getElementById('text_lead_total').innerText = `มีรายชื่อในมือ: ${totalLeadsInHand.toLocaleString()} / 1,057 รายการ`;
+            // 🌟 [อัปเดต] มิติที่ 1: ฐานข้อมูล (Leads) คำนวณความกว้างหลอดแยก 2 สี
+            let tpLeadPct = targetLeads > 0 ? (totalTripetchLeads / targetLeads) * 100 : 0;
+            let exLeadPct = targetLeads > 0 ? (totalExtraLeads / targetLeads) * 100 : 0;
+
+            // ป้องกันหลอดล้นทะลุ 100%
+            if (tpLeadPct + exLeadPct > 100) {
+                let overflow = (tpLeadPct + exLeadPct) - 100;
+                exLeadPct -= overflow;
+                if (exLeadPct < 0) { 
+                    tpLeadPct += exLeadPct; 
+                    exLeadPct = 0;
+                }
+            }
+
+            let leadDisplayPct = Math.round((totalLeadsInHand / targetLeads) * 100);
+
+            document.getElementById('label_lead_percent').innerText = leadDisplayPct + '%';
+            
+            const barLeadTp = document.getElementById('bar_lead_tp');
+            const barLeadEx = document.getElementById('bar_lead_ex');
+            if(barLeadTp) barLeadTp.style.width = tpLeadPct + '%';
+            if(barLeadEx) barLeadEx.style.width = exLeadPct + '%';
+            
+            document.getElementById('text_lead_total').innerText = `ตรีเพชร: ${totalTripetchLeads.toLocaleString()} | เสริม: ${totalExtraLeads.toLocaleString()} / เป้าหมาย: ${targetLeads.toLocaleString()} คัน`;
+            // ----------------------------------------------------
 
             let effortTrackedPct = totalLeadsInHand > 0 ? (totalTracked / totalLeadsInHand) * 100 : 0;
             let effortPrePct = totalLeadsInHand > 0 ? (totalPreService / totalLeadsInHand) * 100 : 0;
